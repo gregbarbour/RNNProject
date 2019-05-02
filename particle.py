@@ -10,11 +10,10 @@ class Particle:
         self.phi = phi
         self.theta = theta
         self.magp = magp  # the three-momentum magnitude
-        self.origin = vtx
-        dirvec = np.array(([np.sin(theta) * np.cos(phi),
-                            np.sin(theta) * np.sin(phi),
-                            np.cos(theta)]))
-        self.unitDirection = dirvec / np.linalg.norm(dirvec)
+        self.origin = vtx # defaults to (0,0,0)
+        self.properLifetime = 1.5e-12 # default to B lifetime in seconds
+
+        self.unitDirection = self.calculateUnitDirection()
         self.px = magp * self.unitDirection[0]
         self.py = magp * self.unitDirection[1]
         self.pz = magp * self.unitDirection[2]
@@ -27,9 +26,18 @@ class Particle:
     def setOrigin(self, origin):
         self.origin = origin
 
+    def setProperLifetime(self, properLifetime):
+        self.properLifetime = properLifetime
+
+    def calculateUnitDirection(self):
+        dirvec = np.array(([np.sin(self.theta) * np.cos(self.phi),
+                            np.sin(self.theta) * np.sin(self.phi),
+                            np.cos(self.theta)]))
+        unitDir = dirvec / np.linalg.norm(dirvec)
+        return unitDir
+
     def propagate(self):
-        self.properLifetime = 1.5e-12  # units of seconds
-        labLifetime = self.gamma * self.properLifetime
+        labLifetime = self.gamma * np.random.exponential(self.properLifetime)
         displacement = self.beta * 3e8 * labLifetime  # 3-dimensional position in metres
         return (self.origin + displacement)
 
@@ -66,7 +74,7 @@ def random2DecayLabFrame(parent, massDaughter1, massDaughter2):
     uses particle_utils to create daughters in ZMF then converts back to lab frame
     randomly chooses phi and theta, momentum constrained by conservation law
     '''
-    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent, massDaughter1, massDaughter2)
+    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent.m, massDaughter1, massDaughter2)
 
     pd1 = calculateFourMomentum(massDaughter1, magP, arbitraryPhi, arbitraryTheta)
     pd2 = calculateFourMomentum(massDaughter2, magP, np.pi + arbitraryPhi, np.pi - arbitraryTheta)
@@ -100,17 +108,17 @@ def random2DecayLabFrame(parent, massDaughter1, massDaughter2):
 ### This is the location of useful functions for the particle package:
 ### especially functions needed for the calculation of different decays
 
-def random2DecayPThetaPhi(parent, massDaughter1, massDaughter2):
+def random2DecayPThetaPhi(mParent, massDaughter1, massDaughter2):
     '''
     Simulate decay of parent into two daughter particles in ZMF of parent
     Randomly generates phi, theta of first daughter, second follows by symmetry
     0<phi<2pi and 0<theta<pi. masses all in MeV
     Returns daughter particles in lab frame
     '''
-    if (massDaughter1 + massDaughter2 > parent.m):
+    if (massDaughter1 + massDaughter2 > mParent):
         print("Decay is impossible")
         return None
-    mParent = parent.m
+
     magP = np.sqrt(
         ((mParent ** 2 - massDaughter1 ** 2 - massDaughter2 ** 2) ** 2 - (2 * massDaughter1 * massDaughter2) ** 2)) / (
                        2 * mParent)
@@ -121,15 +129,17 @@ def random2DecayPThetaPhi(parent, massDaughter1, massDaughter2):
 
 
 def calculateFourMomentum(mass, magp, phi, theta):
-    dvec = np.array(([np.sin(theta) * np.cos(phi),
-                        np.sin(theta) * np.sin(phi),
-                        np.cos(theta)]))
-    unitDir = dvec / np.linalg.norm(dvec)
-
-    relE = np.sqrt(mass ** 2 + magp ** 2)
-    fourMom = np.array(([relE, magp * unitDir[0], magp * unitDir[1], magp * unitDir[2]]))  # contravariant form
+    unitDir=calculateUnitDirection(phi, theta)
+    relE=np.sqrt(mass**2 + magp**2)
+    fourMom = np.array(([relE,magp*unitDir[0],magp*unitDir[1],magp*unitDir[2]])) #contravariant form
     return fourMom
 
+def calculateUnitDirection(phi, theta):
+    dirvec=np.array(([np.sin(theta)*np.cos(phi),
+                                      np.sin(theta)*np.sin(phi),
+                                      np.cos(theta)]))
+    unitDir=dirvec/np.linalg.norm(dirvec)
+    return unitDir
 
 def cartesian2polar(px, py, pz):
     '''
