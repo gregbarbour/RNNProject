@@ -11,7 +11,7 @@ class Particle:
         self.theta = theta
         self.magp = magp  # the three-momentum magnitude
         self.origin = vtx # defaults to (0,0,0)
-        self.properLifetime = 1.5e-12 # default to B lifetime in seconds
+        self.properLifetime = None # default to B lifetime in seconds
 
         self.unitDirection = self.calculateUnitDirection()
         self.px = magp * self.unitDirection[0]
@@ -56,7 +56,23 @@ class Particle:
             p1, p2 = random2DecayLabFrame(self, mpion, mD)
             p1.setOrigin(decayVtx)
             p2.setOrigin(decayVtx)
+            p2.setProperLifetime(1.0e-12) # D meson lifetime
             return p1, p2
+        elif decay == "3pions":
+            mpion = 140.
+            p1, p2, p3 = random3DecayLabFrame(self, mpion, mpion, mpion)
+            p1.setOrigin(decayVtx)
+            p2.setOrigin(decayVtx)
+            p3.setOrigin(decayVtx)
+            return p1,p2,p3
+        elif decay == "Dpionpion":
+            mpion = 140.
+            mD=2000.
+            p1, p2, p3 = random3DecayLabFrame(self, mD, mpion, mpion)
+            p1.setOrigin(decayVtx)
+            p2.setOrigin(decayVtx)
+            p3.setOrigin(decayVtx)
+            return p1,p2,p3
         else:
             print("ERROR: Not a Valid Decay Mode")
             return None, None
@@ -99,6 +115,37 @@ def random2DecayLabFrame(parent, massDaughter1, massDaughter2):
 
     return daughter1, daughter2
 
+def random3DecayLabFrame(parent, m1, m2, m3):
+    '''
+    Simulate a decay vertex that creates 3 tracks. Extra free parameter is needed, the momentum of particle 1 magp1.
+    Instead choose as free parameter the mass m_23, this is essentially equivalent. We introduce one un-physical
+    constraint however, that m_23 is on-shell such that m2+m3<m_23<M-m1.
+    Then the problem reduces to two two-body decays. Only need additional four angles to solve problem.
+    Method: 2-decay of parent to m1 and m_23, 2-decay of m_23 to m2 and m3.
+    '''
+    m_23 = random.uniform(m2+m3,parent.m-m1)
+
+    magp1, phi1, theta1 = random2DecayPThetaPhi(parent.m, m1, m_23)  # first two-body decay
+
+    pd1 = calculateFourMomentum(m1, magp1, phi1, theta1)  # first 4mom calculated in zmf of 3-decay
+
+    beta_23 = calculateBeta(magp1, m_23, np.pi + phi1, np.pi - theta1)
+
+    pd2, pd3 = random2DecayAndTransformBack(beta_23, m_23, m2, m3)  # second and third 4mom in zmf of 3-decay
+
+    labFramePD1 = lorentzBoost(pd1, -parent.beta)
+    labFramePD2 = lorentzBoost(pd2, -parent.beta)
+    labFramePD3 = lorentzBoost(pd3, -parent.beta)
+
+    daughter1 = createParticleFromFourMomentum(labFramePD1)
+    daughter2 = createParticleFromFourMomentum(labFramePD2)
+    daughter3 = createParticleFromFourMomentum(labFramePD3)
+
+    if ((np.linalg.norm(daughter1.beta) > 1.) or (np.linalg.norm(daughter2.beta) > 1.) or (
+            np.linalg.norm(daughter3.beta) > 1.)):
+        print("ERROR: non-physical particle travelling faster than speed of light")
+
+    return daughter1, daughter2, daughter3
 
 ########################################################################################################################
 ########################################################################################################################
@@ -128,6 +175,22 @@ def random2DecayPThetaPhi(mParent, massDaughter1, massDaughter2):
     return magP, arbitraryPhi, arbitraryTheta
 
 
+def random2DecayAndTransformBack(beta, mass_12, massDaughter1, massDaughter2):
+    '''
+    for use in CHAINED 2-decays, such as the m_23 decay of a three-decay process
+    function calls boost beta, in order to transform back from zmf of 12 to local frame
+    '''
+    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(mass_12, massDaughter1, massDaughter2)  # the decay
+
+    pd1 = calculateFourMomentum(massDaughter1, magP, arbitraryPhi, arbitraryTheta)
+    pd2 = calculateFourMomentum(massDaughter2, magP, np.pi + arbitraryPhi, np.pi - arbitraryTheta)
+
+    localFramePD1 = lorentzBoost(pd1, -beta)  # check correct signs
+    localFramePD2 = lorentzBoost(pd2, -beta)
+
+    return localFramePD1, localFramePD2
+
+
 def calculateFourMomentum(mass, magp, phi, theta):
     unitDir=calculateUnitDirection(phi, theta)
     relE=np.sqrt(mass**2 + magp**2)
@@ -140,6 +203,12 @@ def calculateUnitDirection(phi, theta):
                                       np.cos(theta)]))
     unitDir=dirvec/np.linalg.norm(dirvec)
     return unitDir
+
+def calculateBeta(magp, m, phi, theta):
+    unitDir = calculateUnitDirection(phi, theta)
+    betaMod = (magp / m) / np.sqrt(1 + (magp / m) ** 2)
+    beta = betaMod * unitDir
+    return beta
 
 def cartesian2polar(px, py, pz):
     '''
