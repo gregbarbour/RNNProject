@@ -50,14 +50,16 @@ class Particle:
             p1.setOrigin(decayVtx)
             p2.setOrigin(decayVtx)
             return p1, p2
-        elif decay == "pionD":
+
+        elif decay == "Dpion":
             mpion = 140.
             mD = 2000.
-            p1, p2 = random2DecayLabFrame(self, mpion, mD)
+            p1, p2 = random2DecayLabFrame(self, mD, mpion)
             p1.setOrigin(decayVtx)
             p2.setOrigin(decayVtx)
-            p2.setProperLifetime(1.0e-12) # D meson lifetime
+            p1.setProperLifetime(1.0e-12) # D meson lifetime
             return p1, p2
+
         elif decay == "3pions":
             mpion = 140.
             p1, p2, p3 = random3DecayLabFrame(self, mpion, mpion, mpion)
@@ -65,6 +67,7 @@ class Particle:
             p2.setOrigin(decayVtx)
             p3.setOrigin(decayVtx)
             return p1,p2,p3
+
         elif decay == "Dpionpion":
             mpion = 140.
             mD=2000.
@@ -72,10 +75,32 @@ class Particle:
             p1.setOrigin(decayVtx)
             p2.setOrigin(decayVtx)
             p3.setOrigin(decayVtx)
+            p1.setProperLifetime(1.0e-12) # D meson lifetime
             return p1,p2,p3
+
+        elif decay == "4pions":
+            mpion=140.
+            p1, p2, p3, p4 = random4DecayLabFrame(self, mpion, mpion, mpion, mpion)
+            p1.setOrigin(decayVtx)
+            p2.setOrigin(decayVtx)
+            p3.setOrigin(decayVtx)
+            p4.setOrigin(decayVtx)
+            return p1, p2, p3, p4
+
+        elif decay == "Dpionpionpion":
+            mpion = 140.
+            mD = 2000.
+            p1, p2, p3, p4 = random4DecayLabFrame(self, mD, mpion, mpion, mpion)
+            p1.setOrigin(decayVtx)
+            p2.setOrigin(decayVtx)
+            p3.setOrigin(decayVtx)
+            p4.setOrigin(decayVtx)
+            p1.setProperLifetime(1.0e-12) # D meson lifetime
+            return p1, p2, p3, p4
+
         else:
             print("ERROR: Not a Valid Decay Mode")
-            return None, None
+            return None
 
 
 ########################################################################################################################
@@ -146,6 +171,48 @@ def random3DecayLabFrame(parent, m1, m2, m3):
         print("ERROR: non-physical particle travelling faster than speed of light")
 
     return daughter1, daughter2, daughter3
+
+
+def random4DecayLabFrame(parent, m1, m2, m3, m4):
+    '''
+    An extension of 3decay. But now instead of needing just an extra parameter m_23.
+    We need two: m_12 and m_34 (in addition to 6 angles: phi/theta12, phi/theta1, phi/theta3)
+    Process: 2-decay parent to m_12, m_34. Two decay those intermediates to final particles.
+    '''
+    if (np.random.random() < 0.5):  # kinematic constraint. PROBLEM: m_12 is usually larger as it is selected 1st
+        m_12 = random.uniform(m1 + m2, parent.m - m3 - m4)
+        m_34 = random.uniform(m3 + m4, parent.m - m_12)
+
+    else:  # sort of fix
+        m_34 = random.uniform(m3 + m4, parent.m - m1 - m2)
+        m_12 = random.uniform(m1 + m2, parent.m - m_34)
+
+    magp_12, phi_12, theta_12 = random2DecayPThetaPhi(parent.m, m_12, m_34)  # first two-body decay
+    phi_34 = np.pi + phi_12
+    theta_34 = np.pi - theta_12
+
+    beta_12 = calculateBeta(magp_12, m_12, phi_12, theta_12)
+    beta_34 = calculateBeta(magp_12, m_34, phi_34, theta_34)
+
+    pd1, pd2 = random2DecayAndTransformBack(beta_12, m_12, m1, m2)  # second and third 4mom in zmf of 3-decay
+    pd3, pd4 = random2DecayAndTransformBack(beta_34, m_34, m3, m4)  # second and third 4mom in zmf of 3-decay
+
+    labFramePD1 = lorentzBoost(pd1, -parent.beta)
+    labFramePD2 = lorentzBoost(pd2, -parent.beta)
+    labFramePD3 = lorentzBoost(pd3, -parent.beta)
+    labFramePD4 = lorentzBoost(pd4, -parent.beta)
+
+    daughter1 = createParticleFromFourMomentum(labFramePD1)
+    daughter2 = createParticleFromFourMomentum(labFramePD2)
+    daughter3 = createParticleFromFourMomentum(labFramePD3)
+    daughter4 = createParticleFromFourMomentum(labFramePD4)
+
+    if ((np.linalg.norm(daughter1.beta) > 1.) or (np.linalg.norm(daughter2.beta) > 1.)
+            or (np.linalg.norm(daughter3.beta) > 1.) or (np.linalg.norm(daughter4.beta) > 1.)):
+        print("ERROR: non-physical particle travelling faster than speed of light")
+
+    return daughter1, daughter2, daughter3, daughter4
+
 
 ########################################################################################################################
 ########################################################################################################################
@@ -225,7 +292,7 @@ def createParticleFromFourMomentum(fourMomentum):
     p0 = fourMomentum[0]
     mass = np.sqrt(
         p0 ** 2 - fourMomentum[1] ** 2 - fourMomentum[2] ** 2 - fourMomentum[3] ** 2)  # could call hard code mass?
-    print("calculated mass is " + str(mass))
+    # print("calculated mass is " + str(mass))
     # maybe i should call mass instead of calculating it
     magp, phi, theta = cartesian2polar(fourMomentum[1], fourMomentum[2], fourMomentum[3])
 
