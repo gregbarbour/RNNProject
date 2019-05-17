@@ -82,16 +82,18 @@ def generateBJet(jet_energy):
     Whilst ensuring they all share a common jet direction
     '''
     mPion = 140.
+    mB=5300.
     phi = np.pi / 4
     theta = np.pi / 4
-    B_momentum = .8 * jet_energy  # an approximation of the 80% hadronization fraction of Bs
-    candB = particle.Particle(5300., phi, theta, B_momentum)
+    B_energy = .8 * jet_energy  # an approximation of the 80% hadronization fraction of Bs
+    B_momentum = np.sqrt(B_energy**2 - mB**2)
+    candB = particle.Particle(mB, phi, theta, B_momentum)
     candB.setProperLifetime(1.5e-12)
 
     # this leaves 20% of the jet energy to assign to some light charged particles
     # done using two-decay methodology with virtual mass M
     # how many light particles is determined by a randomly assigning fractions of remainder energy
-    energy_remainder = 0.2 * jet_energy
+    energy_remainder = jet_energy - B_energy
     primary_particles = []
     while True:
         energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)
