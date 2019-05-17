@@ -5,7 +5,11 @@ class Particle:
     '''Class to handle true particles for our toy simulations'''
 
     def __init__(self, m, phi, theta, magp, vtx=np.zeros(3)):
-        '''use MeV as default units'''
+        '''
+        use MeV as default units
+        phi in range -pi to pi
+        theta in range 0 to pi
+        '''
         self.m = m
         self.phi = phi
         self.theta = theta
