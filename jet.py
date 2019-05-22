@@ -76,7 +76,7 @@ def addTwoPrimaryTracks(energy, phi, theta):
     return primaryPion1, primaryPion2
 
 
-def generateBJet(jet_energy):
+def generateBJetPrimary(jet_energy):
     '''
     Need to generate a b-hadron and some other primary tracks/particles
     Whilst ensuring they all share a common jet direction
@@ -112,7 +112,7 @@ def generateBJet(jet_energy):
     return candB, primary_particles
 
 
-def generateCJet(jet_energy):
+def generateCJetPrimary(jet_energy):
     '''
     Need to generate a c-hadron and some other primary tracks/particles
     Whilst ensuring they all share a common jet direction
@@ -124,7 +124,7 @@ def generateCJet(jet_energy):
     D_energy = .5 * jet_energy  # an approximation of the 50% hadronization fraction of c
     D_momentum = np.sqrt(D_energy ** 2 - mD ** 2)
     candD = particle.Particle(mD, phi, theta, D_momentum)
-    candD.setProperLifetime(1.5e-12)
+    candD.setProperLifetime(1.0e-12)
 
     # Assign remainin energy to primary vertex tracks
     # randomly assigning fractions of remainder energy
@@ -132,13 +132,13 @@ def generateCJet(jet_energy):
     primary_particles = []
 
     # I have an idea to prevent the problem of trk distribution being only even
-    # if np.random.random()>0.5:
-    #    # randomly create a pion travelling along the jet axis? dunno...
-    #    random_trk_E = 0.1*jet_energy
-    #    random_trk_mom = np.sqrt(random_trk_E**2 - mPion**2)
-    #    jet_axis_pion = particle.Particle(mPion, phi, theta, random_trk_mom)
-    #    primary_particles.append(jet_axis_pion)
-    #    energy_remainder-=random_trk_E
+    if np.random.random()>0.5:
+        # randomly create a pion travelling along the jet axis? dunno...
+        random_trk_E = 0.1*jet_energy
+        random_trk_mom = np.sqrt(random_trk_E**2 - mPion**2)
+        jet_axis_pion = particle.Particle(mPion, phi, theta, random_trk_mom)
+        primary_particles.append(jet_axis_pion)
+        energy_remainder-=random_trk_E
 
     while True:
         energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)
@@ -157,7 +157,7 @@ def generateCJet(jet_energy):
     return candD, primary_particles
 
 
-def generateLightJet(jet_energy):
+def generateLightJetPrimary(jet_energy):
     '''
     Need to generate a c-hadron and some other primary tracks/particles
     Whilst ensuring they all share a common jet direction
