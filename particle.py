@@ -243,7 +243,7 @@ def random2DecayPThetaPhi(mParent, massDaughter1, massDaughter2):
     magP = np.sqrt(
         ((mParent ** 2 - massDaughter1 ** 2 - massDaughter2 ** 2) ** 2 - (2 * massDaughter1 * massDaughter2) ** 2)) / (
                        2 * mParent)
-    arbitraryPhi = random.uniform(0, 2 * np.pi)
+    arbitraryPhi = random.uniform(-np.pi, np.pi) #watch out for convention
     arbitraryTheta = random.uniform(0, np.pi)
 
     return magP, arbitraryPhi, arbitraryTheta
