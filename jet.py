@@ -134,7 +134,7 @@ def generateCJetPrimary(jet_energy):
     # I have an idea to prevent the problem of trk distribution being only even
     if np.random.random()>0.5:
         # randomly create a pion travelling along the jet axis? dunno...
-        random_trk_E = 0.1*jet_energy
+        random_trk_E = 0.125*jet_energy
         random_trk_mom = np.sqrt(random_trk_E**2 - mPion**2)
         jet_axis_pion = particle.Particle(mPion, phi, theta, random_trk_mom)
         primary_particles.append(jet_axis_pion)
@@ -166,7 +166,7 @@ def generateLightJetPrimary(jet_energy):
     phi = np.pi / 4
     theta = np.pi / 4
 
-    energy_remainder = 0.8 * jet_energy  # make an assumption that not all jet energy contained in tracks!
+    energy_remainder = 0.8 * jet_energy  # make an assumption that not all jet energy contained in tracks! Reduces n of trks in l-jets
     primary_particles = []
 
     # I have an idea to prevent the problem of trk distribution being only even
@@ -181,18 +181,20 @@ def generateLightJetPrimary(jet_energy):
     # Assign all energy to primary vertex tracks
     # randomly assigning fractions of remainder energy
     while True:
-        # prevent any single track having a large fraction of jet energy
-        # not sure about this!! might mean light jets have way more primary tracks...
+
         energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)  # 0.5*jet_energy)
 
         if (energy_frac_1 < 16 * mPion):  # keep dR<0.4
             energy_frac_1 = energy_remainder
-        else:
-            energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)
 
         primaryPion1, primaryPion2 = addTwoPrimaryTracks(energy_frac_1, phi, theta)
         energy_remainder -= energy_frac_1
 
         primary_particles.append(primaryPion1)
         primary_particles.append(primaryPion2)
-""
+
+        if (energy_remainder <= 8 * mPion):
+            print("Error in energy measurement: " + str(energy_remainder / jet_energy))
+            break
+
+    return primary_particles
