@@ -6,13 +6,13 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-
+n_jets = 100000
 
 # generate light jets
 ljets_df = pd.DataFrame()
 print("generating light jets")
 
-for i in range(10):
+for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
     ljet = jet.Jet(jet_energy, 1)
 
@@ -33,7 +33,7 @@ for i in range(10):
 # generate b jets
 print("generating b jets")
 bjets_df = pd.DataFrame()
-for i in range(1000):
+for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
     bjet = jet.Jet(jet_energy, 5)
 
@@ -97,7 +97,7 @@ for i in range(1000):
 print("generating c jets")
 
 cjets_df = pd.DataFrame()
-for i in range(10):
+for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
     cjet = jet.Jet(jet_energy, 4)
 
@@ -147,3 +147,5 @@ for i in range(10):
 # save all results using pickle
 
 bjets_df.to_pickle("./bjets.pkl")
+cjets_df.to_pickle("./cjets.pkl")
+ljets_df.to_pickle("./ljets.pkl")
