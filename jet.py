@@ -13,8 +13,8 @@ class Jet:
         self.particles = None
         self.tracks = []
         self.primaryVtx = np.array(([0, 0, 0]))
-        self.secondaryVtx = None
-        self.tertiaryVtx = None
+        self.secondaryVtx = np.array(([None, None, None]))
+        self.tertiaryVtx = np.array(([None, None, None]))
         # self.trksAtSecondary ??
 
     def setSecondaryVtx(self, secondaryVtx):
