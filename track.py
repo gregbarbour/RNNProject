@@ -71,14 +71,14 @@ class Track:
             std = theta / 100  # essentially a 1% error
 
         err = np.random.normal(0, std)
-        theta += err
-        if theta > np.pi:
+        modified_theta = theta + err
+        if modified_theta > np.pi:
             print("Gaussian error pushed theta over pi, setting equal to pi")
-            theta = np.pi
-        elif theta < 0.:
+            modified_theta = np.pi
+        elif modified_theta < 0.:
             print("Gaussian error pushed theta below 0, setting equalt to 0")
-            theta = 0.
-        return theta
+            modified_theta = 0.
+        return modified_theta
 
     # def addErrorsToParameters(self):
     #    self.phi = addGaussianError(self.phi)
