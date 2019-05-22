@@ -15,8 +15,9 @@ class Track:
         Errors taken from: https://www.mpp.mpg.de/~sct/welcomeaux/papers/MOlivo_DPG06.pdf
         https://cds.cern.ch/record/1746744/files/ATL-PHYS-SLIDE-2014-503.pdf
         """
+
         if np.all(particle.origin==0.):
-            print("yee")
+            print("primary track created, assigning correct err")
             err=1e-5 # vertexing error of aprrox 3e-5
             self.position = self.addGaussianError(particle.origin, err*np.ones(3))
             # position at which params are defined
@@ -56,8 +57,8 @@ class Track:
             std = abs(parameter / 100)  # essentially a 1% error, absolute value taken
 
         err = np.random.normal(0, std)
-        parameter += err
-        return parameter
+        modified_parameter = parameter + err
+        return modified_parameter
 
     def addThetaGaussianError(self, theta, std=None):
         """
