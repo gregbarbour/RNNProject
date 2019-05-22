@@ -235,6 +235,8 @@ def random2DecayPThetaPhi(mParent, massDaughter1, massDaughter2):
     '''
     if (massDaughter1 + massDaughter2 > mParent):
         print("Decay is impossible")
+        print("mParent was "+str(mParent))
+        print("This is less than mD1+mD2="+str(massDaughter1+massDaughter2))
         return None
 
     magP = np.sqrt(
