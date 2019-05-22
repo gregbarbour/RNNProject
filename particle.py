@@ -28,6 +28,7 @@ class Particle:
         self.fourMom = np.array(([self.relE, self.px, self.py, self.pz]))  # contravariant form
 
     def setOrigin(self, origin):
+        #print(" caution, modifying the particle origin")
         self.origin = origin
 
     def setProperLifetime(self, properLifetime):

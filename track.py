@@ -17,7 +17,7 @@ class Track:
         """
 
         if np.all(particle.origin==0.):
-            print("primary track created, assigning correct err")
+            #print("primary track created, assigning correct err")
             err=1e-5 # vertexing error of aprrox 3e-5
             self.position = self.addGaussianError(particle.origin, err*np.ones(3))
             # position at which params are defined

@@ -106,7 +106,7 @@ def generateBJetPrimary(jet_energy):
         primary_particles.append(primaryPion2)
 
         if (energy_remainder < 8 * mPion):
-            print("Error in energy measurement: " + str(energy_remainder / jet_energy))
+            #print("Error in energy measurement: " + str(energy_remainder / jet_energy))
             break
 
     return candB, primary_particles
@@ -151,7 +151,7 @@ def generateCJetPrimary(jet_energy):
         primary_particles.append(primaryPion2)
 
         if (energy_remainder < 8 * mPion):
-            print("Error in energy measurement: " + str(energy_remainder / jet_energy))
+            #print("Error in energy measurement: " + str(energy_remainder / jet_energy))
             break
 
     return candD, primary_particles
@@ -194,7 +194,7 @@ def generateLightJetPrimary(jet_energy):
         primary_particles.append(primaryPion2)
 
         if (energy_remainder <= 8 * mPion):
-            print("Error in energy measurement: " + str(energy_remainder / jet_energy))
+            #print("Error in energy measurement: " + str(energy_remainder / jet_energy))
             break
 
     return primary_particles
