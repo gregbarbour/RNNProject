@@ -18,16 +18,19 @@ class Track:
 
         if np.all(particle.origin==0.):
             #print("primary track created, assigning correct err")
-            err=1e-5 # vertexing error of aprrox 3e-5
+            err=1e-5 # vertexing error of aprrox 3e-5 for primary
             self.position = self.addGaussianError(particle.origin, err*np.ones(3))
             # position at which params are defined
         else:
+            # So I actually add the error to the position measurement (1% if not primary)
+            # Instead of adding the error to the impact parameter
             self.position = self.addGaussianError(particle.origin)
         self.phi = self.addGaussianError(particle.phi, 1e-3)
         self.theta = self.addThetaGaussianError(particle.theta, 1e-3) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
         self.qOverP = charge / self.addGaussianError(particle.magp) #use std of 1%
         self.d0, self.z0 = self.calculateImpactParams()  # use newly smudged values to calculate IPs
-        self.covariance = np.identity(5)  # placeholder for now, set covariance matrix to 5d identity
+        # error in d0 and z0 actually follows from error in position and phi,theta,qOverP
+        self.covariance = np.identity(5)  # unused for now, set covariance matrix to identity
 
     def calculateImpactParams(self):  #
         """

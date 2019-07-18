@@ -14,7 +14,7 @@ print("generating light jets")
 
 
 for i in range(n_jets):
-    jet_energy = random.uniform(1e4, 1e5)
+    jet_energy = random.uniform(1e4, 1e5) # energy not pT is uniform 10GeV to 100GeV
     ljet = jet.Jet(jet_energy, 1)
 
     #print("Jet energy is " + str(jet_energy))
@@ -23,6 +23,7 @@ for i in range(n_jets):
     # create tracks form all visible particles and add to the jet
     allparticles = primary_particles
 
+    # When track crated from particle, errors are added
     for p in allparticles:
         tp = track.Track(p, 1)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
         ljet.addTrack(tp.printParameters())
@@ -41,7 +42,8 @@ for i in range(n_jets):
     #print("Jet energy is " + str(jet_energy))
     candB, primary_particles = jet.generateBJetPrimary(jet_energy)
 
-    bDecayMode = np.random.choice(["Dpipipi", "Dpipi", "Dpi"])  # add Dne,Dnepi etc.
+    # select b decay mode and corresponding number of child particles
+    bDecayMode = np.random.choice(["Dpipipi", "Dpipi", "Dpi"])  # To do: add Dneutral,Dneutralpi etc.
     if bDecayMode == "Dpipipi":
         candD, pion1, pion2, pion3 = candB.propagateAndDecay("Dpionpionpion")
         pions = [pion1, pion2, pion3]
@@ -54,7 +56,7 @@ for i in range(n_jets):
 
     bjet.setSecondaryVtx(secondaryVtx=candD.origin)
 
-    cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # add Dne,Dnepi etc.
+    cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
 
     if cDecayMode == "4pi":
         pion4, pion5, pion6, pion7 = candD.propagateAndDecay("4pions")
@@ -72,6 +74,7 @@ for i in range(n_jets):
         pions.extend([pion4, pion5])
 
     # A simple check to ensure four-mom conservation
+    # Not needed but just there to ensure consistency
     sumfourMom = [0., 0., 0., 0.]
     for p in pions:
         sumfourMom += p.fourMom
