@@ -25,9 +25,9 @@ class Track:
             # So I actually add the error to the position measurement (1% if not primary)
             # Instead of adding the error to the impact parameter
             self.position = self.addGaussianError(particle.origin)
-        self.phi = self.addGaussianError(particle.phi, 1e-3)
-        self.theta = self.addThetaGaussianError(particle.theta, 1e-3) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
-        self.qOverP = charge / self.addGaussianError(particle.magp) #use std of 1%
+        self.phi = self.addGaussianError(particle.phi, 1e-5) #1e-3)
+        self.theta = self.addThetaGaussianError(particle.theta, 1e-5) #1e-3) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
+        self.qOverP = charge / self.addGaussianError(particle.magp) #use std of 1% # actually should add gaussian err in qOverP not in P
         self.d0, self.z0 = self.calculateImpactParams()  # use newly smudged values to calculate IPs
         # error in d0 and z0 actually follows from error in position and phi,theta,qOverP
         self.covariance = np.identity(5)  # unused for now, set covariance matrix to identity
@@ -57,7 +57,7 @@ class Track:
         """ Method to add gaussian error to given parameters, e.g. change magP by a small gaussian err"""
         if std is None:
             # automatically deduce a std dev
-            std = abs(parameter / 100)  # essentially a 1% error, absolute value taken
+            std = abs(parameter / 10000)  # / 100 )# essentially a 1% error, absolute value taken
 
         err = np.random.normal(0, std)
         modified_parameter = parameter + err

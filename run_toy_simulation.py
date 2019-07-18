@@ -6,7 +6,7 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 100000
+n_jets = 100
 
 # generate light jets
 ljets_df = pd.DataFrame()
@@ -150,6 +150,6 @@ for i in range(n_jets):
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets.pkl")
-cjets_df.to_pickle("./cjets.pkl")
-ljets_df.to_pickle("./ljets.pkl")
+bjets_df.to_pickle("./bjetsMINERRs.pkl")
+cjets_df.to_pickle("./cjetsMINERRs.pkl")
+ljets_df.to_pickle("./ljetsMINERRs.pkl")
