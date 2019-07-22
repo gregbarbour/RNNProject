@@ -27,7 +27,7 @@ class Track:
             self.position = self.addGaussianError(particle.origin)
         self.phi = self.addGaussianError(particle.phi, 1e-3)
         self.theta = self.addThetaGaussianError(particle.theta, 1e-3) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
-        self.qOverP = charge / self.addGaussianError(particle.magp) #use std of 1% # actually should add gaussian err in qOverP not in P
+        self.qOverP = charge * self.addGaussianError(1./particle.magp) #use std of 1% # actually should add gaussian err in qOverP not in P
         self.d0, self.z0 = self.calculateImpactParams()  # use newly smudged values to calculate IPs
         # error in d0 and z0 actually follows from error in position and phi,theta,qOverP
         self.covariance = np.identity(5)  # unused for now, set covariance matrix to identity
