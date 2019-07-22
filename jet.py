@@ -38,7 +38,7 @@ class Jet:
         if len(data[8]) < 30:
             #print("adding " + str(30 - len(data[8])) + " null tracks")
             for i in range(30 - len(data[8])):
-                data[8].append([0., 0., 0., 0., 0., 0., 0., 0.])
+                data[8].append([np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN])
 
         return [data]  # trackcolumns=["d0","z0","phi","theta","qOverP","x","y","z"])
 
