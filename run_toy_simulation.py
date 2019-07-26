@@ -6,11 +6,11 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 300
+n_jets = 100000
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
-    """ Method to add gaussian error to given parameters, e.g. change magP by a small gaussian err"""
+    """ Method to add gaussian error to given parameters, e.g. change 1/magP by a small gaussian err"""
     if std is None:
         # automatically deduce a std dev
         std = abs(parameter / 100)  # essentially a 1% error, absolute value taken
@@ -18,6 +18,26 @@ def addJetVarsGaussianError(parameter, std=None):
     err = np.random.normal(0, std)
     modified_parameter = parameter + err
     return modified_parameter
+
+def addThetaGaussianError(theta, std=None):
+    """
+    Method to add gaussian error to ANGLe parameters, e.g. change theta by a small gaussian err
+    Theta needs special consideration as its domain is 0<theta<pi, so adding a small err at
+    theta ~ 0 or pi is dangerous
+    """
+    if std == None:
+        # automatically deduce a std dev
+        std = theta / 100  # essentially a 1% error
+
+    err = np.random.normal(0, std)
+    modified_theta = theta + err
+    if modified_theta > np.pi:
+        print("Gaussian error pushed theta over pi, setting equal to pi")
+        modified_theta = np.pi
+    elif modified_theta < 0.:
+        print("Gaussian error pushed theta below 0, setting equalt to 0")
+        modified_theta = 0.
+    return modified_theta
 
 
 # generate light jets
@@ -106,7 +126,7 @@ for i in range(n_jets):
     # Add the track kinematics, e.g. phi, theta, pT, as a "dummy" first track to pass to the RNN
 
     jet_phi = addJetVarsGaussianError(candB.phi , 1e-3) # what value should i give for errs?
-    jet_theta = addJetVarsGaussianError(candB.theta, 1e-3)
+    jet_theta = addThetaGaussianError(candB.theta, 1e-3)
     jet_p = np.sqrt(candB.relE**2 - 5300**2)
     jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
 
