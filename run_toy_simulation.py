@@ -6,7 +6,19 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 100000
+n_jets = 300
+
+# the following used to add a gaussian err to the jet kinematic vars
+def addJetVarsGaussianError(parameter, std=None):
+    """ Method to add gaussian error to given parameters, e.g. change magP by a small gaussian err"""
+    if std is None:
+        # automatically deduce a std dev
+        std = abs(parameter / 100)  # essentially a 1% error, absolute value taken
+
+    err = np.random.normal(0, std)
+    modified_parameter = parameter + err
+    return modified_parameter
+
 
 # generate light jets
 # ljets_df = pd.DataFrame()
@@ -91,6 +103,15 @@ for i in range(n_jets):
     # Reverse the ordering, place primarys at the back
     allparticles = pions + primary_particles
 
+    # Add the track kinematics, e.g. phi, theta, pT, as a "dummy" first track to pass to the RNN
+
+    jet_phi = addJetVarsGaussianError(candB.phi , 1e-3) # what value should i give for errs?
+    jet_theta = addJetVarsGaussianError(candB.theta, 1e-3)
+    jet_p = np.sqrt(candB.relE**2 - 5300**2)
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+
+    jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
+    bjet.addTrack(jet_kinematics_as_track)
     for p in allparticles:
         tp = track.Track(p, 1)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
         bjet.addTrack(tp.printParameters())
@@ -152,6 +173,6 @@ for i in range(n_jets):
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_reverse_order_prims.pkl")
+bjets_df.to_pickle("./bjets_reverse_prims_jetKinTrack.pkl")
 #cjets_df.to_pickle("./cjetsMINERRs.pkl")
 #ljets_df.to_pickle("./ljetsMINERRs.pkl")
