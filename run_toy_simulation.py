@@ -6,7 +6,7 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 100000
+n_jets = 300000
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
@@ -32,10 +32,10 @@ def addThetaGaussianError(theta, std=None):
     err = np.random.normal(0, std)
     modified_theta = theta + err
     if modified_theta > np.pi:
-        print("Gaussian error pushed theta over pi, setting equal to pi")
+        print("jetGaussian error pushed theta over pi, setting equal to pi")
         modified_theta = np.pi
     elif modified_theta < 0.:
-        print("Gaussian error pushed theta below 0, setting equalt to 0")
+        print("jetGaussian error pushed theta below 0, setting equalt to 0")
         modified_theta = 0.
     return modified_theta
 
@@ -125,8 +125,8 @@ for i in range(n_jets):
 
     # Add the track kinematics, e.g. phi, theta, pT, as a "dummy" first track to pass to the RNN
 
-    jet_phi = addJetVarsGaussianError(candB.phi , 1e-3) # what value should i give for errs?
-    jet_theta = addThetaGaussianError(candB.theta, 1e-3)
+    jet_phi = addJetVarsGaussianError(candB.phi , 1e-5) # what value should i give for errs?
+    jet_theta = addThetaGaussianError(candB.theta, 1e-5)
     jet_p = np.sqrt(candB.relE**2 - 5300**2)
     jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
 

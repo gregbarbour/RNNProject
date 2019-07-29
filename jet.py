@@ -90,8 +90,8 @@ def generateBJetPrimary(jet_energy):
     '''
     mPion = 140.
     mB=5300.
-    phi = np.random.uniform(-np.pi,np.pi)
-    theta = np.random.uniform(0.,np.pi)
+    phi = np.pi/4 #np.random.uniform(-np.pi,np.pi)
+    theta = np.pi/4 #np.random.uniform(0.,np.pi)
     B_energy = .8 * jet_energy  # an approximation of the 80% hadronization fraction of Bs
     B_momentum = np.sqrt(B_energy**2 - mB**2)
     candB = particle.Particle(mB, phi, theta, B_momentum)
