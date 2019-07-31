@@ -40,10 +40,10 @@ class Jet:
             for i in range(30 - len(data[8])):
                 data[8].append([np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN])
 
-        return [data]  # trackcolumns=["d0","z0","phi","theta","qOverP","x","y","z"])
+        return data  # trackcolumns=["d0","z0","phi","theta","qOverP","x","y","z"])
 
     def dataAsPD(self):
-        return pd.DataFrame(self.data(), columns=["jet_energy", "jet_flavour",
+        return pd.DataFrame([self.data()], columns=["jet_energy", "jet_flavour",
                                                   "secVtx_x", "secVtx_y", "secVtx_z",
                                                   "terVtx_x", "terVtx_y", "terVtx_z",
                                                   "tracks"])

@@ -6,7 +6,7 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 300000
+n_jets = 30
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
@@ -67,6 +67,7 @@ def addThetaGaussianError(theta, std=None):
 # generate b jets
 print("generating b jets")
 bjets_df = pd.DataFrame()
+bjets_list = n_jets*[None]
 for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
     bjet = jet.Jet(jet_energy, 5)
@@ -127,7 +128,7 @@ for i in range(n_jets):
 
     jet_phi = addJetVarsGaussianError(candB.phi , 1e-5) # what value should i give for errs?
     jet_theta = addThetaGaussianError(candB.theta, 1e-5)
-    jet_p = np.sqrt(candB.relE**2 - 5300**2)
+    jet_p = np.sqrt(candB.relE**2 - 5300**2) # but this assumes jet mass is B mass!!! more about the direction though
     jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
@@ -137,9 +138,23 @@ for i in range(n_jets):
         bjet.addTrack(tp.printParameters())
         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
 
-    bjets_df = bjets_df.append(bjet.dataAsPD(), ignore_index=True)
+    # bjets_df = bjets_df.append(bjet.dataAsPD(), ignore_index=True)
+    # GREG!!, the append function above is veeeery slow at large df
+    # instead nook out the shape of the df first!!
+
+    bjets_list[i] = bjet.data()
 
 
+df_from_list = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour",
+                                                  "secVtx_x", "secVtx_y", "secVtx_z",
+                                                  "terVtx_x", "terVtx_y", "terVtx_z",
+                                                  "tracks"])
+
+
+# print(bjets_df)
+# print("and array")
+# print(df_from_list)
+# print(bjets_df==df_from_list)
 # generate c-jets
 # print("generating c jets")
 #
@@ -193,6 +208,6 @@ for i in range(n_jets):
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_reverse_prims_jetKinTrack.pkl")
+bjets_df.to_pickle("./bjets_ignore.pkl")
 #cjets_df.to_pickle("./cjetsMINERRs.pkl")
 #ljets_df.to_pickle("./ljetsMINERRs.pkl")
