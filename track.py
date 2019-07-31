@@ -28,21 +28,28 @@ class Track:
         self.phi = self.addGaussianError(particle.phi, 1e-3)
         self.theta = self.addThetaGaussianError(particle.theta, 1e-3) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
         self.qOverP = charge * self.addGaussianError(1./particle.magp) #use std of 1% # actually should add gaussian err in qOverP not in P
-        self.d0, self.z0 = self.calculateImpactParams()  # use newly smudged values to calculate IPs
-        # error in d0 and z0 actually follows from error in position and phi,theta,qOverP
+        true_d0, true_z0 = self.calculateImpactParams(particle.unitDirection, particle.origin)  # use true values to calculate IPs
+        if true_d0 == 0.: # should instead be something like isPrimaryTrack...
+            self.d0 = self.addGaussianError(true_d0, 1e-6) # this is very small, 1um, not realistic
+            self.z0 = self.addGaussianError(true_z0, 1e-6)
+        else:
+            self.d0 = self.addGaussianError(true_d0) # 1% error
+            self.z0 = self.addGaussianError(true_z0)
+
         self.covariance = np.identity(5)  # unused for now, set covariance matrix to identity
 
-    def calculateImpactParams(self):  #
+    def calculateImpactParams(self, true_unitDir, true_origin):  #
         """
         If we choose to do this, simplify problem by assuming tracks just straight lines
         Calculate second positon on track, use to find perigeePoint assuming straight line
         Then calculate z0 and d0 from perigee and origin: 0,0,0
         """
-        direction = self.calculateUnitDirection()
-        position1 = self.position
+        direction = true_unitDir # self.calculateUnitDirection()
+        position1 = true_origin #self.position
         position2 = position1 + direction
-        perigeePoint, t = mathutils.geometry.intersect_point_line([0, 0, 0], position1, position2)
-        d0 = np.sqrt(perigeePoint[0] ** 2 + perigeePoint[1] ** 2)
+        primary_vertex = [0, 0, 0]
+        perigeePoint, t = mathutils.geometry.intersect_point_line(primary_vertex, position1, position2)
+        d0 = np.sqrt(perigeePoint[0] ** 2 + perigeePoint[1] ** 2) # what if prim vtx not 0,0,0??
         z0 = perigeePoint[2]
         return d0, z0
 
