@@ -15,6 +15,8 @@ class Jet:
         self.primaryVtx = np.array(([0, 0, 0]))
         self.secondaryVtx = np.array(([None, None, None]))
         self.tertiaryVtx = np.array(([None, None, None]))
+        self.nSecTracks = None
+        self.nTerTracks = None
         # self.trksAtSecondary ??
 
     def setSecondaryVtx(self, secondaryVtx):
@@ -24,6 +26,12 @@ class Jet:
     def setTertiaryVtx(self, tertiaryVtx):
         self.tertiaryVtx = tertiaryVtx
         # print( "Candidate jet true tertiary vtx at: "+str(tertiaryVtx))
+
+    def setNSecTracks(self, nSecTracks):
+        self.nSecTracks =nSecTracks
+
+    def setNTerTracks(self, nTerTracks):
+        self.nTerTracks =nTerTracks
 
     def addTrack(self, trackParams):
         """Takes track represented by parameters vector [d0,z0,phi,theta,qOverP,x,y,z]"""
@@ -35,21 +43,21 @@ class Jet:
         data.append(self.tracks)
 
         # now add null tracks to bring total tracks up to 30
-        if len(data[8]) < 30:
+        if len(data[-1]) < 30:
             #print("adding " + str(30 - len(data[8])) + " null tracks")
-            for i in range(30 - len(data[8])):
-                data[8].append([np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN])
+            for i in range(30 - len(data[-1])):
+                data[-1].append([np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN])
 
         return data  # trackcolumns=["d0","z0","phi","theta","qOverP","x","y","z"])
 
     def dataAsPD(self):
-        return pd.DataFrame([self.data()], columns=["jet_energy", "jet_flavour",
+        return pd.DataFrame([self.data()], columns=["jet_energy", "jet_flavour","nSecTracks","nTerTracks",
                                                   "secVtx_x", "secVtx_y", "secVtx_z",
                                                   "terVtx_x", "terVtx_y", "terVtx_z",
                                                   "tracks"])
 
     def jetLabels(self):
-        jet_labs = [self.energy, self.flavour]
+        jet_labs = [self.energy, self.flavour, self.nSecTracks, self.nTerTracks]
         jet_labs.extend(self.secondaryVtx)
         jet_labs.extend(self.tertiaryVtx)
         return jet_labs  # pd.DataFrame( jet_labs, columns = ["jet_energy", "jet_flavour","secVtx_x","secVtx_y","secVtx_z",terVtx_x","terVtx_y","terVtx_z"])

@@ -6,7 +6,7 @@ import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 30
+n_jets = 300000
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
@@ -66,7 +66,7 @@ def addThetaGaussianError(theta, std=None):
 
 # generate b jets
 print("generating b jets")
-bjets_df = pd.DataFrame()
+# bjets_df = pd.DataFrame()
 bjets_list = n_jets*[None]
 for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
@@ -80,14 +80,18 @@ for i in range(n_jets):
     if bDecayMode == "Dpipipi":
         candD, pion1, pion2, pion3 = candB.propagateAndDecay("Dpionpionpion")
         pions = [pion1, pion2, pion3]
+        nSecTracks = 3
     elif bDecayMode == "Dpipi":
         candD, pion1, pion2 = candB.propagateAndDecay("Dpionpion")
         pions = [pion1, pion2]
+        nSecTracks =2
     elif bDecayMode == "Dpi":
         candD, pion1 = candB.propagateAndDecay("Dpion")
         pions = [pion1]
+        nSecTracks =1
 
     bjet.setSecondaryVtx(secondaryVtx=candD.origin)
+    bjet.setNSecTracks(nSecTracks)
 
     cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
 
@@ -95,16 +99,21 @@ for i in range(n_jets):
         pion4, pion5, pion6, pion7 = candD.propagateAndDecay("4pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6, pion7])
+        nTerTracks = 4
 
     if cDecayMode == "3pi":
         pion4, pion5, pion6 = candD.propagateAndDecay("3pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6])
+        nTerTracks = 3
 
     if cDecayMode == "2pi":
         pion4, pion5 = candD.propagateAndDecay("2pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5])
+        nTerTracks = 2
+
+    bjet.setNTerTracks(nTerTracks)
 
     # A simple check to ensure four-mom conservation
     # Not needed but just there to ensure consistency
@@ -145,7 +154,7 @@ for i in range(n_jets):
     bjets_list[i] = bjet.data()
 
 
-df_from_list = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour",
+bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
                                                   "secVtx_x", "secVtx_y", "secVtx_z",
                                                   "terVtx_x", "terVtx_y", "terVtx_z",
                                                   "tracks"])
@@ -208,6 +217,6 @@ df_from_list = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour",
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_ignore.pkl")
+bjets_df.to_pickle("./bjets_IPerrs_separate.pkl")
 #cjets_df.to_pickle("./cjetsMINERRs.pkl")
 #ljets_df.to_pickle("./ljetsMINERRs.pkl")
