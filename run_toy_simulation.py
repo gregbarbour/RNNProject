@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import particle
 import jet
+import jet_generator
 import track
 import random
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 300000
+n_jets = 30
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
@@ -70,48 +71,55 @@ print("generating b jets")
 bjets_list = n_jets*[None]
 for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
-    bjet = jet.Jet(jet_energy, 5)
+    bjet_creator = jet_generator.JetGenerator(jet_energy, 'b')
 
-    #print("Jet energy is " + str(jet_energy))
-    candB, primary_particles = jet.generateBJetPrimary(jet_energy)
+    # print("Jet energy is " + str(jet_energy))
+    bjet, B_meson, primary_particles = bjet_creator.create_jet_container_and_primaries()
 
     # select b decay mode and corresponding number of child particles
     bDecayMode = np.random.choice(["Dpipipi", "Dpipi", "Dpi"])  # To do: add Dneutral,Dneutralpi etc.
     if bDecayMode == "Dpipipi":
-        candD, pion1, pion2, pion3 = candB.propagateAndDecay("Dpionpionpion")
+        D_meson, pion1, pion2, pion3 = B_meson.propagateAndDecay("Dpionpionpion")
         pions = [pion1, pion2, pion3]
         nSecTracks = 3
     elif bDecayMode == "Dpipi":
-        candD, pion1, pion2 = candB.propagateAndDecay("Dpionpion")
+        D_meson, pion1, pion2 = B_meson.propagateAndDecay("Dpionpion")
         pions = [pion1, pion2]
         nSecTracks =2
     elif bDecayMode == "Dpi":
-        candD, pion1 = candB.propagateAndDecay("Dpion")
+        D_meson, pion1 = B_meson.propagateAndDecay("Dpion")
         pions = [pion1]
         nSecTracks =1
+    else:
+        print("error: no b deacay mode selected")
+        break
 
-    bjet.setSecondaryVtx(secondaryVtx=candD.origin)
+    bjet.setSecondaryVtx(secondaryVtx=D_meson.origin)
     bjet.setNSecTracks(nSecTracks)
 
     cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
 
     if cDecayMode == "4pi":
-        pion4, pion5, pion6, pion7 = candD.propagateAndDecay("4pions")
+        pion4, pion5, pion6, pion7 = D_meson.propagateAndDecay("4pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6, pion7])
         nTerTracks = 4
 
-    if cDecayMode == "3pi":
-        pion4, pion5, pion6 = candD.propagateAndDecay("3pions")
+    elif cDecayMode == "3pi":
+        pion4, pion5, pion6 = D_meson.propagateAndDecay("3pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6])
         nTerTracks = 3
 
-    if cDecayMode == "2pi":
-        pion4, pion5 = candD.propagateAndDecay("2pions")
+    elif cDecayMode == "2pi":
+        pion4, pion5 = D_meson.propagateAndDecay("2pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5])
         nTerTracks = 2
+
+    else:
+        print("error: no decay mode selected")
+        break
 
     bjet.setNTerTracks(nTerTracks)
 
@@ -122,10 +130,10 @@ for i in range(n_jets):
         sumfourMom += p.fourMom
 
     #print(np.allclose(sumfourMom, candB.fourMom))
-    if not (np.allclose(sumfourMom, candB.fourMom)):
+    if not (np.allclose(sumfourMom, B_meson.fourMom)):
         print("ERROR")
         print(sumfourMom)
-        print(candB.fourMom)
+        print(B_meson.fourMom)
         break
 
     # create tracks form all visible particles and add to the jet
@@ -135,9 +143,9 @@ for i in range(n_jets):
 
     # Add the track kinematics, e.g. phi, theta, pT, as a "dummy" first track to pass to the RNN
 
-    jet_phi = addJetVarsGaussianError(candB.phi , 1e-5) # what value should i give for errs?
-    jet_theta = addThetaGaussianError(candB.theta, 1e-5)
-    jet_p = np.sqrt(candB.relE**2 - 5300**2) # but this assumes jet mass is B mass!!! more about the direction though
+    jet_phi = addJetVarsGaussianError(B_meson.phi , 1e-5) # what value should i give for errs?
+    jet_theta = addThetaGaussianError(B_meson.theta, 1e-5)
+    jet_p = np.sqrt(B_meson.relE**2 - 5300**2) # but this assumes jet mass is B mass!!! more about the direction though
     jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
@@ -217,6 +225,6 @@ bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecT
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_MIN_IPerrs_separate.pkl")
+bjets_df.to_pickle("./bjets_test.pkl")
 #cjets_df.to_pickle("./cjetsMINERRs.pkl")
 #ljets_df.to_pickle("./ljetsMINERRs.pkl")
