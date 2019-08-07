@@ -36,7 +36,6 @@ class JetGenerator:
             return jet_container, B_meson, primary_particles
 
 
-
     def create_light_jet_primaries(self):
         '''
         Need to generate a c-hadron and some other primary tracks/particles
@@ -44,7 +43,6 @@ class JetGenerator:
         '''
         jet_energy = self.energy
 
-        mPion = 140.
         phi = np.pi / 4
         theta = np.pi / 4
 
@@ -55,8 +53,8 @@ class JetGenerator:
         if np.random.random() > 0.5:
             # randomly create a pion travelling along the jet axis? dunno...
             random_trk_E = np.random.uniform(0.4 * jet_energy, 0.6 * jet_energy)
-            random_trk_mom = np.sqrt(random_trk_E ** 2 - mPion ** 2)
-            jet_axis_pion = particle.Particle(mPion, phi, theta, random_trk_mom)
+            random_trk_mom = np.sqrt(random_trk_E ** 2 - particle.mPion ** 2)
+            jet_axis_pion = particle.Particle(particle.mPion, phi, theta, random_trk_mom)
             primary_particles.append(jet_axis_pion)
             energy_remainder -= random_trk_E
 
@@ -64,9 +62,9 @@ class JetGenerator:
         # randomly assigning fractions of remainder energy
         while True:
 
-            energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)  # 0.5*jet_energy)
+            energy_frac_1 = np.random.uniform(8 * particle.mPion, energy_remainder)  # 0.5*jet_energy)
 
-            if (energy_frac_1 < 16 * mPion):  # keep dR<0.4
+            if (energy_frac_1 < 16 * particle.mPion):  # keep dR<0.4
                 energy_frac_1 = energy_remainder
 
             primaryPion1, primaryPion2 = self.add_two_primary_tracks(energy_frac_1, phi, theta)
@@ -75,11 +73,12 @@ class JetGenerator:
             primary_particles.append(primaryPion1)
             primary_particles.append(primaryPion2)
 
-            if (energy_remainder <= 8 * mPion):
+            if (energy_remainder <= 8 * particle.mPion):
                 # print("Error in energy measurement: " + str(energy_remainder / jet_energy))
                 break
 
         return primary_particles
+
 
     def create_c_jet_primaries(self):
         '''
@@ -88,13 +87,11 @@ class JetGenerator:
         '''
         jet_energy = self.energy
 
-        mD = 2000.
-        mPion = 140.
         phi = np.pi / 4
         theta = np.pi / 4
         D_energy = .5 * jet_energy  # an approximation of the 50% hadronization fraction of c
-        D_momentum = np.sqrt(D_energy ** 2 - mD ** 2)
-        candD = particle.Particle(mD, phi, theta, D_momentum)
+        D_momentum = np.sqrt(D_energy ** 2 - particle.mD ** 2)
+        candD = particle.Particle(particle.mD, phi, theta, D_momentum)
         candD.setProperLifetime(1.0e-12)
 
         # Assign remainin energy to primary vertex tracks
@@ -106,14 +103,14 @@ class JetGenerator:
         if np.random.random() > 0.5:
             # randomly create a pion travelling along the jet axis? dunno...
             random_trk_E = 0.125 * jet_energy
-            random_trk_mom = np.sqrt(random_trk_E ** 2 - mPion ** 2)
-            jet_axis_pion = particle.Particle(mPion, phi, theta, random_trk_mom)
+            random_trk_mom = np.sqrt(random_trk_E ** 2 - particle.mPion ** 2)
+            jet_axis_pion = particle.Particle(particle.mPion, phi, theta, random_trk_mom)
             primary_particles.append(jet_axis_pion)
             energy_remainder -= random_trk_E
 
         while True:
-            energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)
-            if (energy_frac_1 < 16 * mPion):
+            energy_frac_1 = np.random.uniform(8 * particle.mPion, energy_remainder)
+            if (energy_frac_1 < 16 * particle.mPion):
                 energy_frac_1 = energy_remainder
             primaryPion1, primaryPion2 = self.add_two_primary_tracks(energy_frac_1, phi, theta)
             energy_remainder -= energy_frac_1
@@ -121,11 +118,12 @@ class JetGenerator:
             primary_particles.append(primaryPion1)
             primary_particles.append(primaryPion2)
 
-            if (energy_remainder < 8 * mPion):
+            if (energy_remainder < 8 * particle.mPion):
                 # print("Error in energy measurement: " + str(energy_remainder / jet_energy))
                 break
 
         return candD, primary_particles
+
 
     def create_b_jet_primaries(self):
         '''
@@ -133,13 +131,12 @@ class JetGenerator:
         Whilst ensuring they all share a common jet direction
         '''
         jet_energy = self.energy
-        mPion = 140.
-        mB = 5300.
+
         phi = np.pi / 4  # np.random.uniform(-np.pi,np.pi)
         theta = np.pi / 4  # np.random.uniform(0.,np.pi)
         B_energy = .8 * jet_energy  # an approximation of the 80% hadronization fraction of Bs
-        B_momentum = np.sqrt(B_energy ** 2 - mB ** 2)
-        candB = particle.Particle(mB, phi, theta, B_momentum)
+        B_momentum = np.sqrt(B_energy ** 2 - particle.mB ** 2)
+        candB = particle.Particle(particle.mB, phi, theta, B_momentum)
         candB.setProperLifetime(1.5e-12)
 
         # this leaves 20% of the jet energy to assign to some light charged particles
@@ -148,8 +145,8 @@ class JetGenerator:
         energy_remainder = jet_energy - B_energy
         primary_particles = []
         while True:
-            energy_frac_1 = np.random.uniform(8 * mPion, energy_remainder)
-            if (energy_frac_1 < 16 * mPion):
+            energy_frac_1 = np.random.uniform(8 * particle.mPion, energy_remainder)
+            if (energy_frac_1 < 16 * particle.mPion):
                 energy_frac_1 = energy_remainder
             primaryPion1, primaryPion2 = self.add_two_primary_tracks(energy_frac_1, phi, theta)
             energy_remainder -= energy_frac_1
@@ -157,11 +154,12 @@ class JetGenerator:
             primary_particles.append(primaryPion1)
             primary_particles.append(primaryPion2)
 
-            if (energy_remainder < 8 * mPion):
+            if (energy_remainder < 8 * particle.mPion):
                 # print("Error in energy measurement: " + str(energy_remainder / jet_energy))
                 break
 
         return candB, primary_particles
+
 
     def add_two_primary_tracks(self, energy, phi, theta):
         """
@@ -174,13 +172,12 @@ class JetGenerator:
         Upper Lim: Constrain the tracks by their dR=0.4 (phi and theta), ballpark:
         constraining M<E/4 means dANGLE<0.167 or thereabouts, so dR<0.33
         """
-        mPion = 140.
-        M = np.random.uniform(2 * mPion, energy / 4)  # this is the virtual mass M that two decays
+        M = np.random.uniform(2 * particle.mPion, energy / 4)  # this is the virtual mass M that two decays
         magp = np.sqrt(energy ** 2 - M ** 2)
 
-        betaM = particle.calculateBeta(magp, M, phi, theta) #!!! this is bad practice
+        betaM = particle.calculateBeta(magp, M, phi, theta)  # !!! this is bad practice?
 
-        primPionP1, primPionP2 = particle.random2DecayAndTransformBack(betaM, M, mPion, mPion)
+        primPionP1, primPionP2 = particle.random2DecayAndTransformBack(betaM, M, particle.mPion, particle.mPion)
 
         primaryPion1 = particle.createParticleFromFourMomentum(primPionP1)
         primaryPion2 = particle.createParticleFromFourMomentum(primPionP2)

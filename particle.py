@@ -1,6 +1,11 @@
 import numpy as np
 import random
 
+# Global Definition of Particle Masses
+mPion = 140.
+mB = 5300.
+mD = 2000.
+
 class Particle:
     '''Class to handle true particles for our toy simulations'''
 
