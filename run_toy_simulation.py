@@ -152,7 +152,7 @@ for i in range(n_jets):
 
     jet_phi = addJetVarsGaussianError(B_meson.phi , 1e-5) # what value should i give for errs?
     jet_theta = addThetaGaussianError(B_meson.theta, 1e-5)
-    jet_p = np.sqrt(B_meson.relE**2 - 5300**2) # but this assumes jet mass is B mass!!! more about the direction though
+    jet_p = np.sqrt(B_meson.relE**2 - particle.mB**2) # but this assumes jet mass is B mass!!! more about the direction though
     jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
