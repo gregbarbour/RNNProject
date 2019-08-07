@@ -217,6 +217,6 @@ bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecT
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_IPerrs_separate.pkl")
+bjets_df.to_pickle("./bjets_MIN_IPerrs_separate.pkl")
 #cjets_df.to_pickle("./cjetsMINERRs.pkl")
 #ljets_df.to_pickle("./ljetsMINERRs.pkl")
