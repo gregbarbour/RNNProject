@@ -54,6 +54,15 @@ for i in range(n_jets):
     # print("Jet energy is " + str(jet_energy))
     ljet, primary_particles = ljet_creator.create_jet_container_and_primaries()
 
+    # GREG!! Need to extract the phi and theta of the jet in the instance when it is not pi/4!!!
+    jet_phi = addJetVarsGaussianError(np.pi/4 , 1e-5) # what value should i give for errs?
+    jet_theta = addThetaGaussianError(np.pi/4, 1e-5)
+    jet_p = jet_energy # but this assumes light jet mass is 0!!! more about the direction though
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+
+    jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
+    ljet.addTrack(jet_kinematics_as_track)
+
     # create tracks form all visible particles and add to the jet
     allparticles = primary_particles
 
@@ -119,7 +128,7 @@ for i in range(n_jets):
         nTerTracks = 3
 
     elif cDecayMode == "2pi":
-        pion4, pion5 = D_meson.propagateAndDecay("2pions")
+        pion4, pion5 = D_meson.propagate_and_decay("2pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5])
         nTerTracks = 2
@@ -157,6 +166,7 @@ for i in range(n_jets):
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
     bjet.addTrack(jet_kinematics_as_track)
+
     for p in allparticles:
         tp = track.Track(p, 1)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
         bjet.addTrack(tp.printParameters())
@@ -227,6 +237,14 @@ for i in range(n_jets):
 
     # create tracks form all visible particles and add to the jet
     allparticles = primary_particles + pions
+
+    jet_phi = addJetVarsGaussianError(D_meson.phi , 1e-5) # what value should i give for errs?
+    jet_theta = addThetaGaussianError(D_meson.theta, 1e-5)
+    jet_p = np.sqrt(D_meson.relE**2 - particle.mD**2) # but this assumes jet mass is B mass!!! more about the direction though
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+
+    jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
+    cjet.addTrack(jet_kinematics_as_track)
 
     for p in allparticles:
         tp = track.Track(p, 1)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP

@@ -51,6 +51,11 @@ class Particle:
         displacement = self.beta * 3e8 * labLifetime  # 3-dimensional position in metres
         return (self.origin + displacement)
 
+    def propagate_and_decay(self, decay_mode):
+        decay_vertex = self.propagate()
+        decay_tool = DecayTool(self, decay_mode, decay_vertex)
+        return decay_tool.propagate_and_decay()
+
     def propagateAndDecay(self, decay):
         decayVtx = self.propagate()
         if decay == "2pions":
@@ -115,6 +120,24 @@ class Particle:
 
 ########################################################################################################################
 ########################################################################################################################
+
+class DecayTool:
+
+    def __init__(self, parent, decay_mode, decay_vertex):
+        self.parent = parent
+        self.mode = decay_mode
+        self.decay_vertex = decay_vertex
+
+    def propagate_and_decay(self):
+        """
+        Here we select the appropriate function from the decay mode
+        """
+        if self.mode == "2pions":
+            p1, p2 = random2DecayLabFrame(self.parent, mPion, mPion)  # maybe more readable if i specify the last two are daughters
+            p1.setOrigin(self.decay_vertex)
+            p2.setOrigin(self.decay_vertex)
+            return p1, p2
+
 ########################################################################################################################
 ########################################################################################################################
 
@@ -125,13 +148,17 @@ def random2DecayLabFrame(parent, massDaughter1, massDaughter2):
     uses particle_utils to create daughters in ZMF then converts back to lab frame
     randomly chooses phi and theta, momentum constrained by conservation law
     '''
-    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent.m, massDaughter1, massDaughter2)
+
+    parent_mass = parent.m  # why pass the whole parent?
+    parent_boost = parent.beta
+
+    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent_mass, massDaughter1, massDaughter2)
 
     pd1 = calculateFourMomentum(massDaughter1, magP, arbitraryPhi, arbitraryTheta)
     pd2 = calculateFourMomentum(massDaughter2, magP, np.pi + arbitraryPhi, np.pi - arbitraryTheta)
 
-    labFramePD1 = lorentzBoost(pd1, -parent.beta)
-    labFramePD2 = lorentzBoost(pd2, -parent.beta)
+    labFramePD1 = lorentzBoost(pd1, -parent_boost)
+    labFramePD2 = lorentzBoost(pd2, -parent_boost)
 
     daughter1 = createParticleFromFourMomentum(labFramePD1)
     daughter2 = createParticleFromFourMomentum(labFramePD2)
