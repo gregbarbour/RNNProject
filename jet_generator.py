@@ -92,7 +92,7 @@ class JetGenerator:
         D_energy = .5 * jet_energy  # an approximation of the 50% hadronization fraction of c
         D_momentum = np.sqrt(D_energy ** 2 - particle.mD ** 2)
         candD = particle.Particle(particle.mD, phi, theta, D_momentum)
-        candD.setProperLifetime(1.0e-12)
+        candD.setProperLifetime(particle.D_lifetime)
 
         # Assign remainin energy to primary vertex tracks
         # randomly assigning fractions of remainder energy
@@ -137,7 +137,7 @@ class JetGenerator:
         B_energy = .8 * jet_energy  # an approximation of the 80% hadronization fraction of Bs
         B_momentum = np.sqrt(B_energy ** 2 - particle.mB ** 2)
         candB = particle.Particle(particle.mB, phi, theta, B_momentum)
-        candB.setProperLifetime(1.5e-12)
+        candB.setProperLifetime(particle.B_lifetime)
 
         # this leaves 20% of the jet energy to assign to some light charged particles
         # done using two-decay methodology with virtual mass M

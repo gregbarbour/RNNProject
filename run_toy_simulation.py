@@ -95,15 +95,15 @@ for i in range(n_jets):
     # select b decay mode and corresponding number of child particles
     bDecayMode = np.random.choice(["Dpipipi", "Dpipi", "Dpi"])  # To do: add Dneutral,Dneutralpi etc.
     if bDecayMode == "Dpipipi":
-        D_meson, pion1, pion2, pion3 = B_meson.propagateAndDecay("Dpionpionpion")
+        D_meson, pion1, pion2, pion3 = B_meson.propagate_and_decay("Dpionpionpion")
         pions = [pion1, pion2, pion3]
         nSecTracks = 3
     elif bDecayMode == "Dpipi":
-        D_meson, pion1, pion2 = B_meson.propagateAndDecay("Dpionpion")
+        D_meson, pion1, pion2 = B_meson.propagate_and_decay("Dpionpion")
         pions = [pion1, pion2]
         nSecTracks =2
     elif bDecayMode == "Dpi":
-        D_meson, pion1 = B_meson.propagateAndDecay("Dpion")
+        D_meson, pion1 = B_meson.propagate_and_decay("Dpion")
         pions = [pion1]
         nSecTracks =1
     else:
@@ -116,13 +116,13 @@ for i in range(n_jets):
     cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
 
     if cDecayMode == "4pi":
-        pion4, pion5, pion6, pion7 = D_meson.propagateAndDecay("4pions")
+        pion4, pion5, pion6, pion7 = D_meson.propagate_and_decay("4pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6, pion7])
         nTerTracks = 4
 
     elif cDecayMode == "3pi":
-        pion4, pion5, pion6 = D_meson.propagateAndDecay("3pions")
+        pion4, pion5, pion6 = D_meson.propagate_and_decay("3pions")
         bjet.setTertiaryVtx(pion4.origin)
         pions.extend([pion4, pion5, pion6])
         nTerTracks = 3
@@ -206,15 +206,15 @@ for i in range(n_jets):
     cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # add Dne,Dnepi etc.
 
     if cDecayMode == "4pi":
-        pion1, pion2, pion3, pion4 = D_meson.propagateAndDecay("4pions")
+        pion1, pion2, pion3, pion4 = D_meson.propagate_and_decay("4pions")
         pions = [pion1, pion2, pion3, pion4]
 
     elif cDecayMode == "3pi":
-        pion1, pion2, pion3 = D_meson.propagateAndDecay("3pions")
+        pion1, pion2, pion3 = D_meson.propagate_and_decay("3pions")
         pions = [pion1, pion2, pion3]
 
     elif cDecayMode == "2pi":
-        pion1, pion2 = D_meson.propagateAndDecay("2pions")
+        pion1, pion2 = D_meson.propagate_and_decay("2pions")
         pions = [pion1, pion2]
 
     else:
