@@ -54,13 +54,14 @@ class Particle:
         return (self.origin + displacement)
 
     def propagate_and_decay(self, decay_mode):
-        decay_vertex = self.propagate()
-        decay_tool = DecayTool(self, decay_mode, decay_vertex)
-        return decay_tool.propagate_and_decay_dict()
+        #decay_vertex = self.propagate()
+        #decay_tool = DecayTool(self, decay_mode, decay_vertex)
+        #return decay_tool.propagate_and_decay()
+        return self.propagateAndDecay(decay_mode)
 
     def propagateAndDecay(self, decay):
         decayVtx = self.propagate()
-        if decay == "2pions":
+        if decay == "2pi":
             mD1 = 140.
             mD2 = 140.
             p1, p2 = random2DecayLabFrame(self, mD1, mD2)
@@ -68,7 +69,7 @@ class Particle:
             p2.setOrigin(decayVtx)
             return p1, p2
 
-        elif decay == "Dpion":
+        elif decay == "D+pi":
             mpion = 140.
             mD = 2000.
             p1, p2 = random2DecayLabFrame(self, mD, mpion)
@@ -77,7 +78,7 @@ class Particle:
             p1.setProperLifetime(D_lifetime) # D meson lifetime
             return p1, p2
 
-        elif decay == "3pions":
+        elif decay == "3pi":
             mpion = 140.
             p1, p2, p3 = random3DecayLabFrame(self, mpion, mpion, mpion)
             p1.setOrigin(decayVtx)
@@ -85,7 +86,7 @@ class Particle:
             p3.setOrigin(decayVtx)
             return p1,p2,p3
 
-        elif decay == "Dpionpion":
+        elif decay == "D+2pi":
             mpion = 140.
             mD=2000.
             p1, p2, p3 = random3DecayLabFrame(self, mD, mpion, mpion)
@@ -95,7 +96,7 @@ class Particle:
             p1.setProperLifetime(D_lifetime) # D meson lifetime
             return p1,p2,p3
 
-        elif decay == "4pions":
+        elif decay == "4pi":
             mpion=140.
             p1, p2, p3, p4 = random4DecayLabFrame(self, mpion, mpion, mpion, mpion)
             p1.setOrigin(decayVtx)
@@ -104,7 +105,7 @@ class Particle:
             p4.setOrigin(decayVtx)
             return p1, p2, p3, p4
 
-        elif decay == "Dpionpionpion":
+        elif decay == "D+3pi":
             mpion = 140.
             mD = 2000.
             p1, p2, p3, p4 = random4DecayLabFrame(self, mD, mpion, mpion, mpion)
@@ -143,13 +144,13 @@ class DecayTool:
         """
         Here we select the appropriate function from the decay mode
         """
-        if self.mode == "2pions":
+        if self.mode == "2pi":
             p1, p2 = random2DecayLabFrame(self.parent, mPion, mPion)  # maybe more readable if i specify the last two are daughters
             p1.setOrigin(self.decay_vertex)
             p2.setOrigin(self.decay_vertex)
             return p1, p2
 
-        elif self.mode == "Dpion":
+        elif self.mode == "D+pi":
 
             p1, p2 = random2DecayLabFrame(self.parent, mD, mPion)
             p1.setOrigin(self.decay_vertex)
@@ -157,14 +158,14 @@ class DecayTool:
             p1.setProperLifetime(D_lifetime) # D meson lifetime
             return p1, p2
 
-        elif self.mode == "3pions":
+        elif self.mode == "3pi":
             p1, p2, p3 = random3DecayLabFrame(self.parent, mPion, mPion, mPion)
             p1.setOrigin(self.decay_vertex)
             p2.setOrigin(self.decay_vertex)
             p3.setOrigin(self.decay_vertex)
             return p1,p2,p3
 
-        elif self.mode == "Dpionpion":
+        elif self.mode == "D+2pi":
             p1, p2, p3 = random3DecayLabFrame(self.parent, mD, mPion, mPion)
             p1.setOrigin(self.decay_vertex)
             p2.setOrigin(self.decay_vertex)
@@ -172,7 +173,7 @@ class DecayTool:
             p1.setProperLifetime(D_lifetime) # D meson lifetime
             return p1,p2,p3
 
-        elif self.mode == "4pions":
+        elif self.mode == "4pi":
             p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mPion, mPion, mPion, mPion)
             p1.setOrigin(self.decay_vertex)
             p2.setOrigin(self.decay_vertex)
@@ -180,7 +181,7 @@ class DecayTool:
             p4.setOrigin(self.decay_vertex)
             return p1, p2, p3, p4
 
-        elif self.mode == "Dpionpionpion":
+        elif self.mode == "D+3pi":
             p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mD, mPion, mPion, mPion)
             p1.setOrigin(self.decay_vertex)
             p2.setOrigin(self.decay_vertex)

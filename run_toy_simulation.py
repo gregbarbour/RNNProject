@@ -5,10 +5,12 @@ import jet
 import jet_generator
 import track
 import random
+import time
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 30
+n_jets = 10000
 
+start = time.time()
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
     """ Method to add gaussian error to given parameters, e.g. change 1/magP by a small gaussian err"""
@@ -266,3 +268,5 @@ cjets_df = pd.DataFrame(cjets_list, columns=["jet_energy", "jet_flavour", "nSecT
 bjets_df.to_pickle("./bjets_test.pkl")
 cjets_df.to_pickle("./cjets_test.pkl")
 ljets_df.to_pickle("./ljets_test.pkl")
+
+print("runtime = "+str(time.time()-start))
