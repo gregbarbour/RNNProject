@@ -59,68 +59,6 @@ class Particle:
         return decay_tool.propagate_and_decay_dict()
 
 
-    def propagateAndDecay(self, decay):
-        decayVtx = self.propagate()
-        if decay == "2pi":
-            mD1 = 140.
-            mD2 = 140.
-            p1, p2 = random2DecayLabFrame(self, mD1, mD2)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            return p1, p2
-
-        elif decay == "D+pi":
-            mpion = 140.
-            mD = 2000.
-            p1, p2 = random2DecayLabFrame(self, mD, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p1.setProperLifetime(D_lifetime) # D meson lifetime
-            return p1, p2
-
-        elif decay == "3pi":
-            mpion = 140.
-            p1, p2, p3 = random3DecayLabFrame(self, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            return p1,p2,p3
-
-        elif decay == "D+2pi":
-            mpion = 140.
-            mD=2000.
-            p1, p2, p3 = random3DecayLabFrame(self, mD, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p1.setProperLifetime(D_lifetime) # D meson lifetime
-            return p1,p2,p3
-
-        elif decay == "4pi":
-            mpion=140.
-            p1, p2, p3, p4 = random4DecayLabFrame(self, mpion, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p4.setOrigin(decayVtx)
-            return p1, p2, p3, p4
-
-        elif decay == "D+3pi":
-            mpion = 140.
-            mD = 2000.
-            p1, p2, p3, p4 = random4DecayLabFrame(self, mD, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p4.setOrigin(decayVtx)
-            p1.setProperLifetime(D_lifetime) # D meson lifetime
-            return p1, p2, p3, p4
-
-        else:
-            print("ERROR: Not a Valid Decay Mode")
-            return None
-
-
 ########################################################################################################################
 ########################################################################################################################
 
