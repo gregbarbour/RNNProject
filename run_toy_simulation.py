@@ -6,7 +6,6 @@ import track
 import random
 import time
 
-start = time.time()
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
 n_jets = 10000
 
@@ -68,6 +67,8 @@ for i in range(n_jets):
 
 # generate b jets
 print("generating b jets")
+start = time.time()
+
 # bjets_df = pd.DataFrame()
 bjets_list = n_jets*[None]
 for i in range(n_jets):
@@ -162,6 +163,7 @@ bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecT
                                                   "tracks"])
 
 
+print("bjets runtime = "+str(time.time()-start))
 # print(bjets_df)
 # print("and array")
 # print(df_from_list)
@@ -223,4 +225,3 @@ bjets_df.to_pickle("./bjets_test.pkl")
 cjets_df.to_pickle("./cjets_test.pkl")
 ljets_df.to_pickle("./ljets_test.pkl")
 
-print("runtime = "+str(time.time()-start))
