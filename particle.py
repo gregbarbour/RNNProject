@@ -54,10 +54,10 @@ class Particle:
         return (self.origin + displacement)
 
     def propagate_and_decay(self, decay_mode):
-        #decay_vertex = self.propagate()
-        #decay_tool = DecayTool(self, decay_mode, decay_vertex)
-        #return decay_tool.propagate_and_decay()
-        return self.propagateAndDecay(decay_mode)
+        decay_vertex = self.propagate()
+        decay_tool = DecayTool(self, decay_mode, decay_vertex)
+        return decay_tool.propagate_and_decay_dict()
+
 
     def propagateAndDecay(self, decay):
         decayVtx = self.propagate()
