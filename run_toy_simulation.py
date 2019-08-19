@@ -8,7 +8,7 @@ import random
 import time
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 10000
+n_jets = 1000
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
@@ -43,7 +43,6 @@ def addThetaGaussianError(theta, std=None):
 
 
 # generate light jets
-# ljets_df = pd.DataFrame()
 print("generating light jets")
 
 ljets_list = n_jets*[None]
@@ -73,7 +72,6 @@ for i in range(n_jets):
         ljet.addTrack(tp.printParameters())
         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
 
-    # ljets_df = ljets_df.append(ljet.dataAsPD(), ignore_index=True)
     ljets_list[i] = ljet.data()
 
 ljets_df = pd.DataFrame(ljets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
@@ -86,7 +84,6 @@ ljets_df = pd.DataFrame(ljets_list, columns=["jet_energy", "jet_flavour", "nSecT
 print("generating b jets")
 start = time.time()
 
-# bjets_df = pd.DataFrame()
 bjets_list = n_jets*[None]
 for i in range(n_jets):
     jet_energy = random.uniform(1e4, 1e5)
@@ -148,7 +145,6 @@ for i in range(n_jets):
     for p in pions:
         sumfourMom += p.fourMom
 
-    #print(np.allclose(sumfourMom, candB.fourMom))
     if not (np.allclose(sumfourMom, B_meson.fourMom)):
         print("ERROR")
         print(sumfourMom)
@@ -175,10 +171,6 @@ for i in range(n_jets):
         bjet.addTrack(tp.printParameters())
         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
 
-    # bjets_df = bjets_df.append(bjet.dataAsPD(), ignore_index=True)
-    # GREG!!, the append function above is veeeery slow at large df
-    # instead nook out the shape of the df first!!
-
     bjets_list[i] = bjet.data()
 
 
@@ -188,14 +180,9 @@ bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecT
                                                   "tracks"])
 
 print("bjets runtime = "+str(time.time()-start))
-# print(bjets_df)
-# print("and array")
-# print(df_from_list)
-# print(bjets_df==df_from_list)
+
 # generate c-jets
 print("generating c jets")
-
-#cjets_df = pd.DataFrame()
 
 cjets_list = n_jets*[None]
 
@@ -231,7 +218,6 @@ for i in range(n_jets):
     for p in pions:
         sumfourMom += p.fourMom
 
-    # print(np.allclose(sumfourMom, candD.fourMom))
     if not (np.allclose(sumfourMom, D_meson.fourMom)):
         print("ERROR")
         print(sumfourMom)
@@ -254,7 +240,6 @@ for i in range(n_jets):
         cjet.addTrack(tp.printParameters())
         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
 
-    # cjets_df = cjets_df.append(cjet.dataAsPD(), ignore_index=True)
     cjets_list[i] = cjet.data()
 
 cjets_df = pd.DataFrame(cjets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
@@ -266,7 +251,7 @@ cjets_df = pd.DataFrame(cjets_list, columns=["jet_energy", "jet_flavour", "nSecT
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_test.pkl")
-cjets_df.to_pickle("./cjets_test.pkl")
-ljets_df.to_pickle("./ljets_test.pkl")
+bjets_df.to_pickle("./bjets_refactored.pkl")
+cjets_df.to_pickle("./cjets_refactored.pkl")
+ljets_df.to_pickle("./ljets_refactored.pkl")
 
