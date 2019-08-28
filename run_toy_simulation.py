@@ -8,7 +8,7 @@ import random
 import time
 
 # This script is run to generate a number of toy jets of three flavours and save them using pickle
-n_jets = 1000
+n_jets = 200000
 
 # the following used to add a gaussian err to the jet kinematic vars
 def addJetVarsGaussianError(parameter, std=None):
