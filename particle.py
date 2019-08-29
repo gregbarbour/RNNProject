@@ -1,6 +1,13 @@
 import numpy as np
 import random
 
+# Global Definition of Particle Masses and lifetimes
+mPion = 140.
+mB = 5300.
+mD = 2000.
+D_lifetime = 1.0e-12
+B_lifetime = 1.5e-12  # check??
+
 class Particle:
     '''Class to handle true particles for our toy simulations'''
 
@@ -46,70 +53,131 @@ class Particle:
         displacement = self.beta * 3e8 * labLifetime  # 3-dimensional position in metres
         return (self.origin + displacement)
 
-    def propagateAndDecay(self, decay):
-        decayVtx = self.propagate()
-        if decay == "2pions":
-            mD1 = 140.
-            mD2 = 140.
-            p1, p2 = random2DecayLabFrame(self, mD1, mD2)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            return p1, p2
-
-        elif decay == "Dpion":
-            mpion = 140.
-            mD = 2000.
-            p1, p2 = random2DecayLabFrame(self, mD, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p1.setProperLifetime(1.0e-12) # D meson lifetime
-            return p1, p2
-
-        elif decay == "3pions":
-            mpion = 140.
-            p1, p2, p3 = random3DecayLabFrame(self, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            return p1,p2,p3
-
-        elif decay == "Dpionpion":
-            mpion = 140.
-            mD=2000.
-            p1, p2, p3 = random3DecayLabFrame(self, mD, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p1.setProperLifetime(1.0e-12) # D meson lifetime
-            return p1,p2,p3
-
-        elif decay == "4pions":
-            mpion=140.
-            p1, p2, p3, p4 = random4DecayLabFrame(self, mpion, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p4.setOrigin(decayVtx)
-            return p1, p2, p3, p4
-
-        elif decay == "Dpionpionpion":
-            mpion = 140.
-            mD = 2000.
-            p1, p2, p3, p4 = random4DecayLabFrame(self, mD, mpion, mpion, mpion)
-            p1.setOrigin(decayVtx)
-            p2.setOrigin(decayVtx)
-            p3.setOrigin(decayVtx)
-            p4.setOrigin(decayVtx)
-            p1.setProperLifetime(1.0e-12) # D meson lifetime
-            return p1, p2, p3, p4
-
-        else:
-            print("ERROR: Not a Valid Decay Mode")
-            return None
+    def propagate_and_decay(self, decay_mode):
+        decay_vertex = self.propagate()
+        decay_tool = DecayTool(self, decay_mode, decay_vertex)
+        return decay_tool.propagate_and_decay_dict()
 
 
 ########################################################################################################################
 ########################################################################################################################
+
+class DecayTool:
+
+    def __init__(self, parent, decay_mode, decay_vertex):
+        self.parent = parent
+        self.mode = decay_mode
+        self.decay_vertex = decay_vertex
+
+    def propagate_and_decay_dict(self):
+
+        decay_modes = {"2pi": self.two_pi_decay, "3pi": self.three_pi_decay, "4pi": self.four_pi_decay,
+                       "D+pi": self.D_pi_decay, "D+2pi": self.D_2pi_decay,
+                       "D+3pi": self.D_3pi_decay}
+
+        return decay_modes[self.mode]()
+
+    # def propagate_and_decay(self):
+    #     """
+    #     Here we select the appropriate function from the decay mode
+    #     """
+    #     if self.mode == "2pi":
+    #         p1, p2 = random2DecayLabFrame(self.parent, mPion, mPion)  # maybe more readable if i specify the last two are daughters
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         return p1, p2
+    #
+    #     elif self.mode == "D+pi":
+    #
+    #         p1, p2 = random2DecayLabFrame(self.parent, mD, mPion)
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         p1.setProperLifetime(D_lifetime) # D meson lifetime
+    #         return p1, p2
+    #
+    #     elif self.mode == "3pi":
+    #         p1, p2, p3 = random3DecayLabFrame(self.parent, mPion, mPion, mPion)
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         p3.setOrigin(self.decay_vertex)
+    #         return p1,p2,p3
+    #
+    #     elif self.mode == "D+2pi":
+    #         p1, p2, p3 = random3DecayLabFrame(self.parent, mD, mPion, mPion)
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         p3.setOrigin(self.decay_vertex)
+    #         p1.setProperLifetime(D_lifetime) # D meson lifetime
+    #         return p1,p2,p3
+    #
+    #     elif self.mode == "4pi":
+    #         p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mPion, mPion, mPion, mPion)
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         p3.setOrigin(self.decay_vertex)
+    #         p4.setOrigin(self.decay_vertex)
+    #         return p1, p2, p3, p4
+    #
+    #     elif self.mode == "D+3pi":
+    #         p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mD, mPion, mPion, mPion)
+    #         p1.setOrigin(self.decay_vertex)
+    #         p2.setOrigin(self.decay_vertex)
+    #         p3.setOrigin(self.decay_vertex)
+    #         p4.setOrigin(self.decay_vertex)
+    #         p1.setProperLifetime(D_lifetime) # D meson lifetime
+    #         return p1, p2, p3, p4
+    #
+    #     else:
+    #         print("ERROR: Not a Valid Decay Mode")
+    #         return None
+    #
+
+    def two_pi_decay(self):
+        p1, p2 = random2DecayLabFrame(self.parent, mPion, mPion)  # maybe more readable if specify last two = daughters
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        return p1, p2
+
+    def three_pi_decay(self):
+        p1, p2, p3 = random3DecayLabFrame(self.parent, mPion, mPion, mPion)
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        p3.setOrigin(self.decay_vertex)
+        return p1, p2, p3
+
+    def four_pi_decay(self):
+        p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mPion, mPion, mPion, mPion)
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        p3.setOrigin(self.decay_vertex)
+        p4.setOrigin(self.decay_vertex)
+        return p1, p2, p3, p4
+
+    def D_pi_decay(self):
+        p1, p2 = random2DecayLabFrame(self.parent, mD, mPion)
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        p1.setProperLifetime(D_lifetime)  # D meson lifetime
+        return p1, p2
+
+    def D_2pi_decay(self):
+        p1, p2, p3 = random3DecayLabFrame(self.parent, mD, mPion, mPion)
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        p3.setOrigin(self.decay_vertex)
+        p1.setProperLifetime(D_lifetime)  # D meson lifetime
+        return p1, p2, p3
+
+    def D_3pi_decay(self):
+        p1, p2, p3, p4 = random4DecayLabFrame(self.parent, mD, mPion, mPion, mPion)
+        p1.setOrigin(self.decay_vertex)
+        p2.setOrigin(self.decay_vertex)
+        p3.setOrigin(self.decay_vertex)
+        p4.setOrigin(self.decay_vertex)
+        p1.setProperLifetime(D_lifetime)  # D meson lifetime
+        return p1, p2, p3, p4
+
+
 ########################################################################################################################
 ########################################################################################################################
 
@@ -120,13 +188,17 @@ def random2DecayLabFrame(parent, massDaughter1, massDaughter2):
     uses particle_utils to create daughters in ZMF then converts back to lab frame
     randomly chooses phi and theta, momentum constrained by conservation law
     '''
-    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent.m, massDaughter1, massDaughter2)
+
+    parent_mass = parent.m  # why pass the whole parent?
+    parent_boost = parent.beta
+
+    magP, arbitraryPhi, arbitraryTheta = random2DecayPThetaPhi(parent_mass, massDaughter1, massDaughter2)
 
     pd1 = calculateFourMomentum(massDaughter1, magP, arbitraryPhi, arbitraryTheta)
     pd2 = calculateFourMomentum(massDaughter2, magP, np.pi + arbitraryPhi, np.pi - arbitraryTheta)
 
-    labFramePD1 = lorentzBoost(pd1, -parent.beta)
-    labFramePD2 = lorentzBoost(pd2, -parent.beta)
+    labFramePD1 = lorentzBoost(pd1, -parent_boost)
+    labFramePD2 = lorentzBoost(pd2, -parent_boost)
 
     daughter1 = createParticleFromFourMomentum(labFramePD1)
     daughter2 = createParticleFromFourMomentum(labFramePD2)
@@ -294,7 +366,6 @@ def cartesian2polar(px, py, pz):
     phi = np.arctan2(py, px) # what could pos
     return magP, phi, theta
 
-
 def createParticleFromFourMomentum(fourMomentum):
     p0 = fourMomentum[0]
     mass = np.sqrt(
@@ -304,7 +375,6 @@ def createParticleFromFourMomentum(fourMomentum):
     magp, phi, theta = cartesian2polar(fourMomentum[1], fourMomentum[2], fourMomentum[3])
 
     return Particle(mass, phi, theta, magp)
-
 
 def lorentzBoost(fourMomentum, beta):
     '''
