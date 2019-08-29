@@ -27,14 +27,15 @@ class Track:
             self.position = self.addGaussianError(particle.origin)
         self.phi = self.addGaussianError(particle.phi, 1e-5) #-5 is min errs
         self.theta = self.addThetaGaussianError(particle.theta, 1e-5) #actually much worse at vals close to 0 or pi, but use approx to keep close to phi
-        self.qOverP = charge * self.addGaussianError(1./particle.magp) #use std of 1% # actually should add gaussian err in qOverP not in P
+        self.qOverP = charge * self.addGaussianError(1./particle.magp, 1e-7) # now doing abs err
+        #use std of 1% # actually should add gaussian err in qOverP not in P
         true_d0, true_z0 = self.calculateImpactParams(particle.unitDirection, particle.origin)  # use true values to calculate IPs
         if true_d0 == 0.: # should instead be something like isPrimaryTrack...
             self.d0 = self.addGaussianError(true_d0, 1e-6) # this is very small, 1um, not realistic
             self.z0 = self.addGaussianError(true_z0, 1e-6)
         else:
-            self.d0 = self.addGaussianError(true_d0) # 1% error
-            self.z0 = self.addGaussianError(true_z0)
+            self.d0 = self.addGaussianError(true_d0, 1e-6) # 1% error # now doing abs errs
+            self.z0 = self.addGaussianError(true_z0, 1e-6)
 
         self.covariance = np.identity(5)  # unused for now, set covariance matrix to identity
 

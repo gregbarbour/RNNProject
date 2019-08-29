@@ -58,7 +58,7 @@ for i in range(n_jets):
     jet_phi = addJetVarsGaussianError(np.pi/4 , 1e-5) # what value should i give for errs?
     jet_theta = addThetaGaussianError(np.pi/4, 1e-5)
     jet_p = jet_energy # but this assumes light jet mass is 0!!! more about the direction though
-    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p, 1e-7) #abs err not 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
     ljet.addTrack(jet_kinematics_as_track)
@@ -161,7 +161,7 @@ for i in range(n_jets):
     jet_phi = addJetVarsGaussianError(B_meson.phi , 1e-5) # what value should i give for errs?
     jet_theta = addThetaGaussianError(B_meson.theta, 1e-5)
     jet_p = np.sqrt(B_meson.relE**2 - particle.mB**2) # but this assumes jet mass is B mass!!! more about the direction though
-    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p, 1e-7) # now abs err not 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
     bjet.addTrack(jet_kinematics_as_track)
@@ -231,7 +231,7 @@ for i in range(n_jets):
     jet_phi = addJetVarsGaussianError(D_meson.phi , 1e-5) # what value should i give for errs?
     jet_theta = addThetaGaussianError(D_meson.theta, 1e-5)
     jet_p = np.sqrt(D_meson.relE**2 - particle.mD**2) # but this assumes jet mass is B mass!!! more about the direction though
-    jet_oneOverP =  addJetVarsGaussianError(1/jet_p) # 1% err
+    jet_oneOverP =  addJetVarsGaussianError(1/jet_p, 1e-7) # now abs err not 1% err
 
     jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
     cjet.addTrack(jet_kinematics_as_track)
@@ -252,7 +252,7 @@ cjets_df = pd.DataFrame(cjets_list, columns=["jet_energy", "jet_flavour", "nSecT
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_refactored.pkl")
-cjets_df.to_pickle("./cjets_refactored.pkl")
-ljets_df.to_pickle("./ljets_refactored.pkl")
+bjets_df.to_pickle("./bjets_all_abs_min_errs.pkl")
+cjets_df.to_pickle("./cjets_all_abs_min_errs.pkl")
+ljets_df.to_pickle("./ljets_all_abs_min_errs.pkl")
 
