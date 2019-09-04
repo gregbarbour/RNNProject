@@ -199,20 +199,24 @@ for i in range(n_jets):
     if cDecayMode == "4pi":
         pion1, pion2, pion3, pion4 = D_meson.propagate_and_decay(cDecayMode)
         pions = [pion1, pion2, pion3, pion4]
+        nSecTracks = 4
 
     elif cDecayMode == "3pi":
         pion1, pion2, pion3 = D_meson.propagate_and_decay(cDecayMode)
         pions = [pion1, pion2, pion3]
+        nSecTracks = 3
 
     elif cDecayMode == "2pi":
         pion1, pion2 = D_meson.propagate_and_decay(cDecayMode)
         pions = [pion1, pion2]
+        nSecTracks = 2
 
     else:
         print("error: no c decay mode selected")
         break
 
     cjet.setSecondaryVtx(pion1.origin)
+    cjet.setNSecTracks(nSecTracks)
 
     # A simple check to ensure four-mom conservation
     sumfourMom = [0., 0., 0., 0.]
