@@ -32,6 +32,7 @@ def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
   nodirtrack = remove_dirtrack #or not add_dirtrack
   X = order_random(X)
   X = scale_features(X,features)
+  X = np.nan_to_num(X)
   y = bjets_DF[['secVtx_x', 'secVtx_y', 'secVtx_z', 'terVtx_x', 'terVtx_y', 'terVtx_z']].values
   y = y * 1000  # change units of vertices from m to mm, keep vals close to unity
   return X, y
