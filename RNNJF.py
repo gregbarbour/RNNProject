@@ -14,17 +14,20 @@ from sklearn.metrics import mean_squared_error
 
 def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
   ntracks=30
-  all_features = ['d0','z0','phi','theta','q/p','x_o','y_o','z_o','x_p','y_p','z_p']
+  all_features = np.array(['d0','z0','phi','theta','q/p','x_o','y_o','z_o','x_p','y_p','z_p'])
   nfeatures = len(features)
-  feature_idx = [np.where(all_features == i)[0][0] for i in features]
+  feature_idx = [np.where(all_features == i)[0][0] for i in np.array(features)]
+  print("reading the datafile")
   bjets_DF = pd.read_pickle(DF) #"./bjets_IPonly_abs_10um_errs.pkl")
   trks = np.zeros((len(bjets_DF), ntracks, nfeatures))
+  print("loading tracks")
   for i in range(len(bjets_DF)):
     trks[i] = np.array([bjets_DF['tracks'][i]])[:, :, feature_idx]
     # if add_dirtrack:
     #   ...
 
   X = trks
+  print("preprocessing the data")
   if remove_dirtrack: X = remove_direction_track(X,len(features))
   nodirtrack = remove_dirtrack #or not add_dirtrack
   X = order_random(X)
@@ -131,7 +134,7 @@ if __name__ == "__main__":
                                  save_weights_only=True)
   earlyStop = EarlyStopping(monitor='val_loss', verbose=True, patience=10)
   nEpochs = 10
-
+  print("fitting to training data...")
   myRNN_hist = myRNN.fit(X_train, y_train, epochs=nEpochs, batch_size=256,validation_split=0.20,
                   callbacks=[earlyStop, myRNN_mChkPt],)
 
