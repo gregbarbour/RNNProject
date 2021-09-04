@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d as plt3d
@@ -11,31 +12,44 @@ from keras.layers import BatchNormalization, Layer, TimeDistributed, Dropout
 from keras.layers import Dense, Input, Masking, LSTM
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
 from sklearn.metrics import mean_squared_error
+import argparse
 
 def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
+  print("reading the datafile")
+  bjets_DF = pd.read_pickle(DF) #"./bjets_IPonly_abs_10um_errs.pkl")
+
+  X = get_tracks(bjets_DF,features)
+  print("preprocessing the data")
+  if remove_dirtrack: X = remove_direction_track(X,len(features))
+  nodirtrack = remove_dirtrack #or not add_dirtrack
+  if args.order_by_feature is not None:
+    print("ordering by {}".format(args.order_by_feature))
+    fidx=np.where(all_features == args.order_by_feature)[0][0]
+    X = order_by_feature(X, nodirtrack, feature=fidx)
+  elif args.use_custom_order:
+    raise NotImplemented()
+  else:
+    print("using random order")
+    X = order_random(X)
+  X = scale_features(X,features)
+  X = np.nan_to_num(X)
+  y = bjets_DF[['secVtx_x', 'secVtx_y', 'secVtx_z', 'terVtx_x', 'terVtx_y', 'terVtx_z']].values
+  y = y * 1000  # change units of vertices from m to mm, keep vals close to unity
+  return X, y
+
+def get_tracks(bjets_DF,features):
   ntracks=30
   all_features = np.array(['d0','z0','phi','theta','q/p','x_o','y_o','z_o','x_p','y_p','z_p'])
   nfeatures = len(features)
   feature_idx = [np.where(all_features == i)[0][0] for i in np.array(features)]
-  print("reading the datafile")
-  bjets_DF = pd.read_pickle(DF) #"./bjets_IPonly_abs_10um_errs.pkl")
   trks = np.zeros((len(bjets_DF), ntracks, nfeatures))
   print("loading tracks")
   for i in range(len(bjets_DF)):
     trks[i] = np.array([bjets_DF['tracks'][i]])[:, :, feature_idx]
     # if add_dirtrack:
     #   ...
+  return trks
 
-  X = trks
-  print("preprocessing the data")
-  if remove_dirtrack: X = remove_direction_track(X,len(features))
-  nodirtrack = remove_dirtrack #or not add_dirtrack
-  X = order_random(X)
-  X = scale_features(X,features)
-  X = np.nan_to_num(X)
-  y = bjets_DF[['secVtx_x', 'secVtx_y', 'secVtx_z', 'terVtx_x', 'terVtx_y', 'terVtx_z']].values
-  y = y * 1000  # change units of vertices from m to mm, keep vals close to unity
-  return X, y
 
 def order_by_feature(X, nodirtrack, feature=0):
   Xordered = np.nan_to_num(X)
@@ -60,26 +74,18 @@ def remove_direction_track(X,nfeatures=5):
 def scale_features(X,features):
   nfeatures=len(features)
   Xscaled = X
-  for track_variable in range(nfeatures):
-    var_to_scale = Xscaled[:, :, track_variable].reshape(300000 * 30)
+  for i, feature in enumerate(features):
+    var_to_scale = Xscaled[:, :, i].reshape(300000 * 30)
     var_to_scale = var_to_scale.reshape(-1, 1)
-    if (track_variable == 0):
-      print((track_variable == 0))
-      print(track_variable)
+    if feature in ['d0','z0','q/p']:
+      print(feature)
       scaler = RobustScaler()  # maybe have another look at this case, it seems to skew d0 quite a lot
-    elif (track_variable == 4):
-      print((track_variable == 4))
-      print(track_variable)
-      scaler = RobustScaler()
-    elif (track_variable == 1):
-      print(track_variable)
-      scaler = RobustScaler()
     else:
       scaler = MinMaxScaler([-1, 1])
     scaler.fit(var_to_scale)
     scaled_var = scaler.transform(var_to_scale)
-    Xscaled[:, :, track_variable] = scaled_var.reshape(300000, 30)
-    return Xscaled
+    Xscaled[:, :, i] = scaled_var.reshape(300000, 30)
+  return Xscaled
 
 def split_train_test(X,y,split=280000):
   X_train = X[:split]
@@ -108,23 +114,54 @@ def get_RNNJF(nJets, nTrks, nFeatures, nOutputs,   nHidden = 300,   nDense = 40)
   print(myRNN.summary())
   return myRNN
 
+def plot_loss(myRNN_hist,out):
+  epochs = np.arange(1, len(myRNN_hist.history['loss']) + 1)
+
+  plt.plot(epochs, myRNN_hist.history['loss'], label='training')
+  plt.plot(epochs, myRNN_hist.history['val_loss'], label='validation')
+  plt.xlabel('epochs', fontsize=14)
+  plt.ylabel('MSE loss', fontsize=14)
+  plt.legend()
+  plt.savefig(os.path.join(out,"loss.png"))
+
 if __name__ == "__main__":
 
-  datafile = "./bjets_IPonly_abs_10um_errs.pkl"
-  model_savefile = 'myRNN_weights.h5'
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--remove_dirtrack", action="store_true", default=False,
+                      help="remove direction track, only for old files")
+  parser.add_argument("--add_dirtrack", action="store_true", default=False,
+                      help="add direction track, only for new files")
+  parser.add_argument("--input", type=str, default="../bjets_newminerrs.pkl", help="input datafile (pickle)")
+  parser.add_argument("--features", type=list, default=['d0', 'z0', 'phi', 'theta', 'q/p'],
+                      help="list of features to use (list of strings)")
+  parser.add_argument("--epochs", type=int, default=100, help="max n of epochs")
+  parser.add_argument("--nHidden", type=int, default=300, help="n of nodes in hidden layer (RNN)")
+  parser.add_argument("--nDense", type=int, default=40, help="n of nodes in FC layer after RNN")
+  parser.add_argument("--out", type=str, default='out/',
+                      help="output directory for weights of trained network and loss curves")
+  parser.add_argument("--split", type=int, default='20000', help="Default n of training samples used (max 300k)")
+  parser.add_argument("--order_by_feature", type=str, default=None,
+                      help="Order by the defined feature ('d0','z0',etc.)")
+  parser.add_argument("--use_custom_order", action="store_true", default=False, help="use custom ordering")
+  args = parser.parse_args()
+
+  if not os.path.exists(args.out):
+    os.makedirs(args.out)
+  datafile = args.input
+  model_savefile = os.path.join(args.out,'myRNN_weights.h5')
   if "new" in datafile:
     remove_dirtrack = False
     # option to add dirtrack using jet information
-    # add_dirtrack = True
+    # add_dirtrack = args.add_dirtrack
   else:
-    remove_dirtrack = True
+    remove_dirtrack = args.remove_dirtrack
     # add_dirtrack = False
 
-  features = ['d0', 'z0', 'phi', 'theta', 'q/p']
+  features = args.features
   X, y = load_data(datafile,remove_dirtrack,features=features)
-  X_train, X_test, y_train, y_test = split_train_test(X, y)
-  nHidden = 300
-  nDense = 40
+  X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split)
+  nHidden = args.nHidden
+  nDense = args.nDense
   nJets, nTrks, nFeatures = X_train.shape
   nOutputs = y.shape[1]
   myRNN = get_RNNJF(nJets, nTrks, nFeatures, nOutputs, nHidden, nDense)
@@ -134,8 +171,9 @@ if __name__ == "__main__":
                                  save_best_only=True,
                                  save_weights_only=True)
   earlyStop = EarlyStopping(monitor='val_loss', verbose=True, patience=10)
-  nEpochs = 10
+  nEpochs = args.epochs
   print("fitting to training data...")
   myRNN_hist = myRNN.fit(X_train, y_train, epochs=nEpochs, batch_size=256,validation_split=0.20,
                   callbacks=[earlyStop, myRNN_mChkPt],)
 
+  plot_loss(myRNN_hist,args.out)

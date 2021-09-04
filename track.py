@@ -37,7 +37,7 @@ class Track:
             else:
                 self.d0 = abs(self.addGaussianError(true_d0, 1e-5)) # 1% error # now doing abs errs
                 self.z0 = self.addGaussianError(true_z0, 1e-5)
-                true_polar_angle = np.arctan(perigee[1] / perigee[0])
+                true_polar_angle = np.sign(perigee[1])*np.arccos(perigee[0] / true_d0)
             z_perigee = self.z0
             x_perigee = self.d0 * np.cos(true_polar_angle) #note noise is only added to d0, not to the azimuthal angular position of the perigee!!
             y_perigee = self.d0 * np.sin(true_polar_angle)
