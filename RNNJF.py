@@ -17,7 +17,7 @@ import argparse
 def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
   print("reading the datafile")
   bjets_DF = pd.read_pickle(DF) #"./bjets_IPonly_abs_10um_errs.pkl")
-
+  print("loading tracks")
   X = get_tracks(bjets_DF,features)
   print("preprocessing the data")
   if remove_dirtrack: X = remove_direction_track(X,len(features))
@@ -43,7 +43,6 @@ def get_tracks(bjets_DF,features):
   nfeatures = len(features)
   feature_idx = [np.where(all_features == i)[0][0] for i in np.array(features)]
   trks = np.zeros((len(bjets_DF), ntracks, nfeatures))
-  print("loading tracks")
   for i in range(len(bjets_DF)):
     trks[i] = np.array([bjets_DF['tracks'][i]])[:, :, feature_idx]
     # if add_dirtrack:
