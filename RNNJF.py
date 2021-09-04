@@ -1,17 +1,18 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d as plt3d
+# import mpl_toolkits.mplot3d as plt3d
 import pandas as pd
-import math
-import copy
-import pickle
+# import math
+# import copy
+# import pickle
 from keras.models import Sequential, Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import BatchNormalization, Layer, TimeDistributed, Dropout
 from keras.layers import Dense, Input, Masking, LSTM
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
-from sklearn.metrics import mean_squared_error
+# from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 import argparse
 
 def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
@@ -28,6 +29,8 @@ def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
     X = order_by_feature(X, nodirtrack, feature=fidx)
   elif args.use_custom_order:
     raise NotImplemented()
+  elif args.no_reorder:
+    print("No reorder performed")
   else:
     print("using random order")
     X = order_random(X)
@@ -77,9 +80,10 @@ def scale_features(X,features):
     var_to_scale = Xscaled[:, :, i].reshape(300000 * 30)
     var_to_scale = var_to_scale.reshape(-1, 1)
     if feature in ['d0','z0','q/p']:
-      print(feature)
+      print("Robust Scaling: {}".format(feature))
       scaler = RobustScaler()  # maybe have another look at this case, it seems to skew d0 quite a lot
     else:
+      print("MinMax Scaling: {}".format(feature))
       scaler = MinMaxScaler([-1, 1])
     scaler.fit(var_to_scale)
     scaled_var = scaler.transform(var_to_scale)
@@ -87,10 +91,13 @@ def scale_features(X,features):
   return Xscaled
 
 def split_train_test(X,y,split=280000):
-  X_train = X[:split]
-  X_test = X[split:]
-  y_train = y[:split]
-  y_test = y[split:]
+  # X_train = X[:split]
+  # X_test = X[split:]
+  # y_train = y[:split]
+  # y_test = y[split:]
+  ts = (300000-split)/300000
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts, random_state=42)
+  print(X_train.shape)
   return X_train, X_test, y_train, y_test
 
 def get_RNNJF(nJets, nTrks, nFeatures, nOutputs,   nHidden = 300,   nDense = 40):
@@ -142,6 +149,7 @@ if __name__ == "__main__":
   parser.add_argument("--order_by_feature", type=str, default=None,
                       help="Order by the defined feature ('d0','z0',etc.)")
   parser.add_argument("--use_custom_order", action="store_true", default=False, help="use custom ordering")
+  parser.add_argument("--no_reorder", action="store_true", default=False, help="No re-ordering done (uses order particles made)")
   args = parser.parse_args()
 
   if not os.path.exists(args.out):
