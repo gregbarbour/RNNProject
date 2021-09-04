@@ -90,13 +90,15 @@ def scale_features(X,features):
     Xscaled[:, :, i] = scaled_var.reshape(300000, 30)
   return Xscaled
 
-def split_train_test(X,y,split=280000):
+def split_train_test(X,y,split=280000,seed=None):
   # X_train = X[:split]
   # X_test = X[split:]
   # y_train = y[:split]
   # y_test = y[split:]
   ts = (300000-split)/300000
-  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts, random_state=42)
+  # if seed==None:
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts)#, random_state=42)
+  # else:
   print(X_train.shape)
   return X_train, X_test, y_train, y_test
 
@@ -166,7 +168,7 @@ if __name__ == "__main__":
 
   features = args.features
   X, y = load_data(datafile,remove_dirtrack,features=features)
-  X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split)
+  X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split, seed=None)
   nHidden = args.nHidden
   nDense = args.nDense
   nJets, nTrks, nFeatures = X_train.shape
