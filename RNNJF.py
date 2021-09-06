@@ -15,18 +15,20 @@ from sklearn.preprocessing import MinMaxScaler, RobustScaler
 from sklearn.model_selection import train_test_split
 import argparse
 
-def load_data(DF, remove_dirtrack, features=['d0','z0','phi','theta','q/p']):
+def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0','z0','phi','theta','q/p']):
+  all_features = np.array(['d0','z0','phi','theta','q/p','x_o','y_o','z_o','x_p','y_p','z_p'])
   print("reading the datafile")
   bjets_DF = pd.read_pickle(DF) #"./bjets_IPonly_abs_10um_errs.pkl")
   print("loading tracks")
   X = get_tracks(bjets_DF,features)
   print("preprocessing the data")
   if remove_dirtrack: X = remove_direction_track(X,len(features))
-  nodirtrack = remove_dirtrack #or not add_dirtrack
+  nodirtrack = remove_dirtrack or not add_dirtrack
   if args.order_by_feature is not None:
-    print("ordering by {}".format(args.order_by_feature))
+    if args.reverse: print("ordering by decreasing {}".format(args.order_by_feature))
+    else: print("ordering by increasing {}".format(args.order_by_feature))
     fidx=np.where(all_features == args.order_by_feature)[0][0]
-    X = order_by_feature(X, nodirtrack, feature=fidx)
+    X = order_by_feature(X, nodirtrack, args.reverse, feature=fidx)
   elif args.use_custom_order:
     raise NotImplemented()
   elif args.no_reorder:
@@ -52,15 +54,19 @@ def get_tracks(bjets_DF,features):
     #   ...
   return trks
 
-
-def order_by_feature(X, nodirtrack, feature=0):
-  Xordered = np.nan_to_num(X)
+def order_by_feature(X, nodirtrack, reverse, feature=0):
   if nodirtrack:
-    for i, jet in enumerate(Xordered[:, 0:]):
-      Xordered[i, 0:] = jet[np.abs(jet[:, feature]).argsort()[::-1]]
+    print("no direction track, ordering by feature {}".format(feature))
+    for i, jet in enumerate(X[:, 0:]):
+      nan_ind = np.where(np.isnan(X[i]))[0][0]
+      if reverse: X[i, 0:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()[::-1]]
+      else: X[i, 0:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()]
   else:
-    for i, jet in enumerate(Xordered[:, 1:]):
-      Xordered[i, 1:] = jet[np.abs(jet[:, feature]).argsort()[::-1]]
+    for i, jet in enumerate(X[:, 1:]):
+      nan_ind = np.where(np.isnan(X[i]))[0][0]
+      if reverse: X[i, 1:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()[::-1]]
+      else: X[i, 1:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()]
+  return X
 
 def order_random(X):
   for i in range(len(X)):
@@ -152,12 +158,13 @@ if __name__ == "__main__":
   parser.add_argument("--split", type=int, default='20000', help="Default n of training samples used (max 300k)")
   parser.add_argument("--order_by_feature", type=str, default=None,
                       help="Order by the defined feature ('d0','z0',etc.)")
+  parser.add_argument("--reverse", action="store_true", default=False, help="In case of order by feature, order by decreasing value if reverse is true")
   parser.add_argument("--use_custom_order", action="store_true", default=False, help="use custom ordering")
   parser.add_argument("--no_reorder", action="store_true", default=False, help="No re-ordering done (uses order particles made)")
   parser.add_argument("--trial", type=int, default=1, help="trial number, fixes traintestsplit seed")
   parser.add_argument("--loss", type=str, default="mae", help="the training loss function ['mse','mae']")
   args = parser.parse_args()
-
+  
   if args.use_custom_order and args.no_reorder:
     raise ValueError("incompatible arguments")
   if args.order_by_feature is not None and args.no_reorder:
@@ -173,15 +180,16 @@ if __name__ == "__main__":
   datafile = args.input
   model_savefile = os.path.join(out_folder,'myRNN_weights.h5')
   if "new" in datafile:
+    print("no dirtrack to remove")
     remove_dirtrack = False
     # option to add dirtrack using jet information
-    # add_dirtrack = args.add_dirtrack
+    add_dirtrack = args.add_dirtrack
   else:
     remove_dirtrack = args.remove_dirtrack
-    # add_dirtrack = False
+    add_dirtrack = False
 
   features = args.features
-  X, y = load_data(datafile,remove_dirtrack,features=features)
+  X, y = load_data(datafile,remove_dirtrack,add_dirtrack,features=features)
   X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split, seed=args.trial)
   nHidden = args.nHidden
   nDense = args.nDense
