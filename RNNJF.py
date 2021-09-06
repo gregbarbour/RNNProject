@@ -96,9 +96,11 @@ def split_train_test(X,y,split=280000,seed=None):
   # y_train = y[:split]
   # y_test = y[split:]
   ts = (300000-split)/300000
-  # if seed==None:
-  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts)#, random_state=42)
-  # else:
+  if seed==None:
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts)#, random_state=42)
+  else:
+    print("train/test split with seed {}".format(seed))
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=ts, random_state=seed)
   print(X_train.shape)
   return X_train, X_test, y_train, y_test
 
@@ -152,12 +154,24 @@ if __name__ == "__main__":
                       help="Order by the defined feature ('d0','z0',etc.)")
   parser.add_argument("--use_custom_order", action="store_true", default=False, help="use custom ordering")
   parser.add_argument("--no_reorder", action="store_true", default=False, help="No re-ordering done (uses order particles made)")
+  parser.add_argument("--trial", type=int, default=1, help="trial number, fixes traintestsplit seed")
+  parser.add_argument("--loss", type=str, default="mae", help="the training loss function ['mse','mae']")
   args = parser.parse_args()
+
+  if args.use_custom_order and args.no_reorder:
+    raise ValueError("incompatible arguments")
+  if args.order_by_feature is not None and args.no_reorder:
+    raise ValueError("incompatible arguments")
+  if args.order_by_feature is not None and args.use_custom_order:
+    raise ValueError("incompatible arguments")
 
   if not os.path.exists(args.out):
     os.makedirs(args.out)
+  if not os.path.exists(os.path.join(args.out,"trial{}".format(args.trial))):
+    os.makedirs(os.path.join(args.out,"trial{}".format(args.trial)))
+  out_folder = os.path.join(args.out,"trial{}".format(args.trial))
   datafile = args.input
-  model_savefile = os.path.join(args.out,'myRNN_weights.h5')
+  model_savefile = os.path.join(out_folder,'myRNN_weights.h5')
   if "new" in datafile:
     remove_dirtrack = False
     # option to add dirtrack using jet information
@@ -168,14 +182,14 @@ if __name__ == "__main__":
 
   features = args.features
   X, y = load_data(datafile,remove_dirtrack,features=features)
-  X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split, seed=None)
+  X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split, seed=args.trial)
   nHidden = args.nHidden
   nDense = args.nDense
   nJets, nTrks, nFeatures = X_train.shape
   nOutputs = y.shape[1]
   myRNN = get_RNNJF(nJets, nTrks, nFeatures, nOutputs, nHidden, nDense)
-  myRNN.compile(loss='mean_absolute_error', optimizer='adam',
-                metrics=['mae'])
+  myRNN.compile(loss=args.loss, optimizer='adam',
+                metrics=['mae','mse'])
   myRNN_mChkPt = ModelCheckpoint(model_savefile, monitor='val_loss', verbose=True,
                                  save_best_only=True,
                                  save_weights_only=True)
@@ -185,4 +199,4 @@ if __name__ == "__main__":
   myRNN_hist = myRNN.fit(X_train, y_train, epochs=nEpochs, batch_size=256,validation_split=0.20,
                   callbacks=[earlyStop, myRNN_mChkPt],)
 
-  plot_loss(myRNN_hist,args.out)
+  plot_loss(myRNN_hist,out_folder)
