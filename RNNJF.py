@@ -198,5 +198,5 @@ if __name__ == "__main__":
   print("fitting to training data...")
   myRNN_hist = myRNN.fit(X_train, y_train, epochs=nEpochs, batch_size=256,validation_split=0.20,
                   callbacks=[earlyStop, myRNN_mChkPt],)
-
+  np.save(os.path.join(out_folder,'history.npy'), myRNN_hist.history)
   plot_loss(myRNN_hist,out_folder)
