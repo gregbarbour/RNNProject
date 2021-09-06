@@ -30,7 +30,8 @@ def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0','z0','phi','thet
     fidx=np.where(all_features == args.order_by_feature)[0][0]
     X = order_by_feature(X, nodirtrack, args.reverse, feature=fidx)
   elif args.use_custom_order:
-    raise NotImplemented()
+    print("using custom ordering: by sqrt(d0^2 +z0^2)")
+    X = order_by_r0(X, nodirtrack, args.reverse)
   elif args.no_reorder:
     print("No reorder performed")
   else:
@@ -66,6 +67,21 @@ def order_by_feature(X, nodirtrack, reverse, feature=0):
       nan_ind = np.where(np.isnan(X[i]))[0][0]
       if reverse: X[i, 1:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()[::-1]]
       else: X[i, 1:nan_ind] = jet[np.abs(jet[:nan_ind, 0]).argsort()]
+  return X
+
+def order_by_r0(X, nodirtrack, reverse):
+
+  if nodirtrack:
+    print("no direction track, ordering by sqrt(d0^2 +z0^2)")
+    for i, jet in enumerate(X[:, 0:]):
+      nan_ind = np.where(np.isnan(X[i]))[0][0]
+      if reverse: X[i,0:nan_ind] = jet[np.linalg.norm(jet[:nan_ind,:2],axis=1).argsort()[::-1]]
+      else: X[i,0:nan_ind] = jet[np.linalg.norm(jet[:nan_ind,:2],axis=1).argsort()]
+  else:
+    for i, jet in enumerate(X[:, 1:]):
+      nan_ind = np.where(np.isnan(X[i]))[0][0]
+      if reverse: X[i, 1:nan_ind] = jet[np.linalg.norm(jet[:nan_ind, :2], axis=1).argsort()[::-1]]
+      else: X[i, 1:nan_ind] = jet[np.linalg.norm(jet[:nan_ind, :2], axis=1).argsort()]
   return X
 
 def order_random(X):
@@ -164,7 +180,7 @@ if __name__ == "__main__":
   parser.add_argument("--trial", type=int, default=1, help="trial number, fixes traintestsplit seed")
   parser.add_argument("--loss", type=str, default="mae", help="the training loss function ['mse','mae']")
   args = parser.parse_args()
-  
+
   if args.use_custom_order and args.no_reorder:
     raise ValueError("incompatible arguments")
   if args.order_by_feature is not None and args.no_reorder:
