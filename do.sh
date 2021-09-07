@@ -10,7 +10,7 @@
 
 for t in 1 2 3 4 5
 do
-  python RNNJF.py --out order_by_increasing_r0 --split 20000 --trial $t --use_custom_order t1
-  python RNNJF.py --out order_by_decreasing_r0 --split 20000 --trial $t --use_custom_order t1 --reverse
+  python RNNJF.py --out order_by_increasing_t1 --split 20000 --trial $t --use_custom_order t1
+  python RNNJF.py --out order_by_decreasing_t1 --split 20000 --trial $t --use_custom_order t1 --reverse
 done
 
