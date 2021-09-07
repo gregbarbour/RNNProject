@@ -48,7 +48,7 @@ def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0', 'z0', 'phi', 't
     X = order_random(X)
 
   X = only_keep_features(X, features)
-  X = scale_features(X, features)
+  X = scale_features(X, features, robust_features=args.robust_features)
   X = np.nan_to_num(X)
   y = bjets_DF[['secVtx_x', 'secVtx_y', 'secVtx_z', 'terVtx_x', 'terVtx_y', 'terVtx_z']].values
   y = y * 1000  # change units of vertices from m to mm, keep vals close to unity
@@ -169,13 +169,13 @@ def remove_direction_track(X, nfeatures=5):
   return X_removed_dirtrk
 
 
-def scale_features(X, features):
+def scale_features(X, features, robust_features=['d0', 'z0', 'q/p']):
   nfeatures = len(features)
   Xscaled = X
   for i, feature in enumerate(features):
     var_to_scale = Xscaled[:, :, i].reshape(300000 * 30)
     var_to_scale = var_to_scale.reshape(-1, 1)
-    if feature in ['d0', 'z0', 'q/p']:
+    if feature in robust_features:
       print("Robust Scaling: {}".format(feature))
       scaler = RobustScaler()  # maybe have another look at this case, it seems to skew d0 quite a lot
     else:
@@ -259,7 +259,11 @@ if __name__ == "__main__":
                       help="No re-ordering done (uses order particles made)")
   parser.add_argument("--trial", type=int, default=1, help="trial number, fixes traintestsplit seed")
   parser.add_argument("--loss", type=str, default="mae", help="the training loss function ['mse','mae']")
+  parser.add_argument("--robust_scale", action='store', dest='robust_features', type=str, nargs='*', default=['d0', 'z0', 'q/p'],
+                      help="list of features to robust scale, all other features will be minmax scaled")
   args = parser.parse_args()
+
+  print(args.robust_features)
 
   if args.use_custom_order and args.no_reorder:
     raise ValueError("incompatible arguments")
