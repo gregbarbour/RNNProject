@@ -12,7 +12,7 @@
 
 for t in 1 2 3 4 5
 do
-  python RNNJF.py --out baseline_20k --split 20000 --trial $t
-  python RNNJF.py --out MinMax_d0 --split 20000 --trial $t --robust_scale z0 q/p
+  #python RNNJF.py --out baseline_20k --split 20000 --trial $t
+  python RNNJF.py --out MinMax_z0d0 --split 20000 --trial $t --robust_scale q/p
 done
 
