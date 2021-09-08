@@ -8,11 +8,12 @@
 #python RNNJF.py --out order_by_decreasing_r0 --split 20000 --trial $t --use_custom_order r0 --reverse
 #python RNNJF.py --out order_by_increasing_t1 --split 20000 --trial $t --use_custom_order t1
 #python RNNJF.py --out order_by_decreasing_t1 --split 20000 --trial $t --use_custom_order t1 --reverse
-
+#python RNNJF.py --out baseline_20k --split 20000 --trial $t
+#python RNNJF.py --out MinMax_z0d0 --split 20000 --trial $t --robust_scale q/p
 
 for t in 1 2 3 4 5
 do
-  #python RNNJF.py --out baseline_20k --split 20000 --trial $t
-  python RNNJF.py --out MinMax_z0d0 --split 20000 --trial $t --robust_scale q/p
+  python RNNJF.py --out new_features_xpyp_random --split 20000 --trial $t --add_features d0 z0 phi theta q/p x_p y_p
+  python RNNJF.py --out new_features_xpyp_decreasing_t1 --split 20000 --trial $t --use_custom_order t1 --reverse --add_features d0 z0 phi theta q/p x_p y_p
 done
 
