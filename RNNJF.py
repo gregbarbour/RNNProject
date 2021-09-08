@@ -242,8 +242,8 @@ if __name__ == "__main__":
   parser.add_argument("--add_dirtrack", action="store_true", default=False,
                       help="add direction track, only for new files")
   parser.add_argument("--input", type=str, default="../bjets_newminerrs.pkl", help="input datafile (pickle)")
-  parser.add_argument("--features", type=list, default=['d0', 'z0', 'phi', 'theta', 'q/p'],
-                      help="list of features to use (list of strings)")
+  parser.add_argument("--add_features", action='store', dest='features', type=str, nargs='*',
+                      default=['d0', 'z0', 'phi', 'theta', 'q/p'], help="list of features to use")
   parser.add_argument("--epochs", type=int, default=100, help="max n of epochs")
   parser.add_argument("--nHidden", type=int, default=300, help="n of nodes in hidden layer (RNN)")
   parser.add_argument("--nDense", type=int, default=40, help="n of nodes in FC layer after RNN")
@@ -259,11 +259,11 @@ if __name__ == "__main__":
                       help="No re-ordering done (uses order particles made)")
   parser.add_argument("--trial", type=int, default=1, help="trial number, fixes traintestsplit seed")
   parser.add_argument("--loss", type=str, default="mae", help="the training loss function ['mse','mae']")
-  parser.add_argument("--robust_scale", action='store', dest='robust_features', type=str, nargs='*', default=['d0', 'z0', 'q/p'],
+  parser.add_argument("--robust_scale", action='store', dest='robust_features', type=str, nargs='*', default=['d0', 'z0', 'q/p', 'x_p', 'y_p'],
                       help="list of features to robust scale, all other features will be minmax scaled")
   args = parser.parse_args()
 
-  print(args.robust_features)
+  print(args.features)
 
   if args.use_custom_order and args.no_reorder:
     raise ValueError("incompatible arguments")
