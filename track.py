@@ -26,7 +26,7 @@ class Track:
                 # Instead of adding the error to the impact parameter
                 self.position = particle.origin
             self.phi = self.addGaussianError(particle.phi, 1e-4) #-5 is min errs
-            self.theta = self.addThetaGaussianError(particle.theta, 1e-4) #-5 is min errs
+            self.theta = self.addThetaGaussianError(particle.theta, 1e-3) #-5 is min errs
             self.qOverP = charge * self.addGaussianError(1./particle.magp, abs((1./particle.magp) / 100))  # defaults to 0.1% error
 
             true_d0, true_z0, perigee = self.calculateImpactParams(particle.unitDirection, particle.origin)  # use true values to calculate IPs
