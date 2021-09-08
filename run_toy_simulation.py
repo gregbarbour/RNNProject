@@ -262,7 +262,7 @@ print("bjets runtime = "+str(time.time()-start))
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_newminerrs.pkl")
+bjets_df.to_pickle("./bjets_newhighnoise.pkl")
 # cjets_df.to_pickle("./cjets_newminerrs.pkl")
 # ljets_df.to_pickle("./ljets_newminerrs.pkl")
 #

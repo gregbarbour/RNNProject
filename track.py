@@ -25,21 +25,21 @@ class Track:
                 # So I actually add the error to the position measurement (1% if not primary)
                 # Instead of adding the error to the impact parameter
                 self.position = particle.origin
-            self.phi = self.addGaussianError(particle.phi, 1e-5) #-5 is min errs
-            self.theta = self.addThetaGaussianError(particle.theta, 1e-5) #-5 is min errs
-            self.qOverP = charge * self.addGaussianError(1./particle.magp)  # defaults to 0.1% error
+            self.phi = self.addGaussianError(particle.phi, 1e-4) #-5 is min errs
+            self.theta = self.addThetaGaussianError(particle.theta, 1e-4) #-5 is min errs
+            self.qOverP = charge * self.addGaussianError(1./particle.magp, abs((1./particle.magp) / 100))  # defaults to 0.1% error
 
             true_d0, true_z0, perigee = self.calculateImpactParams(particle.unitDirection, particle.origin)  # use true values to calculate IPs
             if true_d0 == 0.: # should instead be something like isPrimaryTrack...
-                self.d0 = abs(self.addGaussianError(true_d0, 1e-5)) # this is very small, 1um, not realistic
-                self.z0 = self.addGaussianError(true_z0, 1e-5)
+                self.d0 = abs(self.addGaussianError(true_d0, 1e-4))
+                self.z0 = self.addGaussianError(true_z0, 1e-4)
                 true_polar_angle= np.pi/4 #arbitrary choice
             else:
-                self.d0 = abs(self.addGaussianError(true_d0, 1e-5)) # 1% error # now doing abs errs
-                self.z0 = self.addGaussianError(true_z0, 1e-5)
+                self.d0 = abs(self.addGaussianError(true_d0, 1e-4))
+                self.z0 = self.addGaussianError(true_z0, 1e-4)
                 true_polar_angle = np.sign(perigee[1])*np.arccos(perigee[0] / true_d0)
             z_perigee = self.z0
-            x_perigee = self.d0 * np.cos(true_polar_angle) #note noise is only added to d0, not to the azimuthal angular position of the perigee!!
+            x_perigee = self.d0 * np.cos(true_polar_angle) #note noise is only added to d0, not to the azimuthal angular position of the perigee!! Maybe should use same error as phi
             y_perigee = self.d0 * np.sin(true_polar_angle)
 
             self.perigee = np.array([x_perigee, y_perigee, z_perigee])
