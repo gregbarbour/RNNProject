@@ -17,6 +17,6 @@
 
 for t in 1 2 3 4 5
 do
-  python RNNJF.py --out baseline_280k --input bjets_newhighnoise.pkl --split 20000 --trial $t
+  python RNNJF.py --out baseline_280k --input bjets_newhighnoise.pkl --split 280000 --trial $t
 done
 
