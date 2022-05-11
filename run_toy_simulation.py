@@ -43,118 +43,113 @@ def addThetaGaussianError(theta, std=None):
 
 
 # generate light jets
-# print("generating light jets")
-#
-# ljets_list = n_jets*[None]
-#
-# for i in range(n_jets):
-#     jet_energy = random.uniform(1e4, 1e5) # energy not pT is uniform 10GeV to 100GeV
-#     ljet_creator = jet_generator.JetGenerator(jet_energy, 'light')
-#
-#     # print("Jet energy is " + str(jet_energy))
-#     ljet, primary_particles = ljet_creator.create_jet_container_and_primaries()
-#
-#     # GREG!! Need to extract the phi and theta of the jet in the instance when it is not pi/4!!!
-#     # jet_phi = addJetVarsGaussianError(np.pi/4 , 1e-5) # what value should i give for errs?
-#     # jet_theta = addThetaGaussianError(np.pi/4, 1e-5)
-#     # jet_p = jet_energy # but this assumes light jet mass is 0!!! more about the direction though
-#     # jet_oneOverP =  addJetVarsGaussianError(1/jet_p, 1e-7) #abs err not 1% err
-#     #
-#     # jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
-#     # ljet.addTrack(jet_kinematics_as_track)
-#
-#     # create tracks form all visible particles and add to the jet
-#     allparticles = primary_particles
-#
-#     # When track crated from particle, errors are added
-#     for p in allparticles:
-#         tp = track.Track(p, 1, noise=noise)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
-#         ljet.addTrack(tp.printParameters())
-#         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
-#
-#     ljets_list[i] = ljet.data()
-#
-# ljets_df = pd.DataFrame(ljets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
-#                                                   "secVtx_x", "secVtx_y", "secVtx_z",
-#                                                   "terVtx_x", "terVtx_y", "terVtx_z",
-#                                                   "tracks"])
+print("generating light jets")
 
-
-# generate b jets
-print("generating b jets")
-start = time.time()
-
-bjets_list = n_jets*[None]
+ljets_list = n_jets*[None]
+#
 for i in range(n_jets):
-    jet_energy = random.uniform(1e4, 1e5)
-    bjet_creator = jet_generator.JetGenerator(jet_energy, 'b')
+    jet_energy = random.uniform(1e4, 1e5) # energy not pT is uniform 10GeV to 100GeV
+    ljet_creator = jet_generator.JetGenerator(jet_energy, 'light')
+#     # print("Jet energy is " + str(jet_energy))
+    ljet, primary_particles = ljet_creator.create_jet_container_and_primaries()
+    # GREG!! Need to extract the phi and theta of the jet in the instance when it is not pi/4!!!
+    # jet_phi = addJetVarsGaussianError(np.pi/4 , 1e-5) # what value should i give for errs?
+    # jet_theta = addThetaGaussianError(np.pi/4, 1e-5)
+    # jet_p = jet_energy # but this assumes light jet mass is 0!!! more about the direction though
+    # jet_oneOverP =  addJetVarsGaussianError(1/jet_p, 1e-7) #abs err not 1% err
+    #
+    # jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
+    # ljet.addTrack(jet_kinematics_as_track)
+    # create tracks form all visible particles and add to the jet
+    allparticles = primary_particles
+    # When track crated from particle, errors are added
+    for p in allparticles:
+        tp = track.Track(p, 1, noise=noise)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
+        ljet.addTrack(tp.printParameters())
+        # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
+    ljets_list[i] = ljet.data()
+
+ljets_df = pd.DataFrame(ljets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
+                                                  "secVtx_x", "secVtx_y", "secVtx_z",
+                                                  "terVtx_x", "terVtx_y", "terVtx_z",
+                                                  "tracks"])
+
+'''
+# generate b jets
+#print("generating b jets")
+#start = time.time()
+
+#bjets_list = n_jets*[None]
+#for i in range(n_jets):
+#    jet_energy = random.uniform(1e4, 1e5)
+#    bjet_creator = jet_generator.JetGenerator(jet_energy, 'b')
 
     # print("Jet energy is " + str(jet_energy))
-    bjet, B_meson, primary_particles = bjet_creator.create_jet_container_and_primaries()
+#    bjet, B_meson, primary_particles = bjet_creator.create_jet_container_and_primaries()
 
     # select b decay mode and corresponding number of child particles
-    bDecayMode = np.random.choice(["D+3pi", "D+2pi", "D+pi"])  # To do: add Dneutral,Dneutralpi etc.
-    if bDecayMode == "D+3pi":
-        D_meson, pion1, pion2, pion3 = B_meson.propagate_and_decay(bDecayMode)
-        pions = [pion1, pion2, pion3]
-        nSecTracks = 3
-    elif bDecayMode == "D+2pi":
-        D_meson, pion1, pion2 = B_meson.propagate_and_decay(bDecayMode)
-        pions = [pion1, pion2]
-        nSecTracks =2
-    elif bDecayMode == "D+pi":
-        D_meson, pion1 = B_meson.propagate_and_decay(bDecayMode)
-        pions = [pion1]
-        nSecTracks =1
-    else:
-        print("error: no b deacay mode selected")
-        break
+#    bDecayMode = np.random.choice(["D+3pi", "D+2pi", "D+pi"])  # To do: add Dneutral,Dneutralpi etc.
+#    if bDecayMode == "D+3pi":
+#        D_meson, pion1, pion2, pion3 = B_meson.propagate_and_decay(bDecayMode)
+#        pions = [pion1, pion2, pion3]
+#        nSecTracks = 3
+#    elif bDecayMode == "D+2pi":
+#        D_meson, pion1, pion2 = B_meson.propagate_and_decay(bDecayMode)
+#        pions = [pion1, pion2]
+#        nSecTracks =2
+#    elif bDecayMode == "D+pi":
+#        D_meson, pion1 = B_meson.propagate_and_decay(bDecayMode)
+#        pions = [pion1]
+#        nSecTracks =1
+#    else:
+#        print("error: no b deacay mode selected")
+#        break
 
-    bjet.setSecondaryVtx(secondaryVtx=D_meson.origin)
-    bjet.setNSecTracks(nSecTracks)
+#    bjet.setSecondaryVtx(secondaryVtx=D_meson.origin)
+#    bjet.setNSecTracks(nSecTracks)
 
-    cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
+#    cDecayMode = np.random.choice(["4pi", "3pi", "2pi"])  # To Do:add Dne,Dnepi etc.
 
-    if cDecayMode == "4pi":
-        pion4, pion5, pion6, pion7 = D_meson.propagate_and_decay(cDecayMode)
-        bjet.setTertiaryVtx(pion4.origin)
-        pions.extend([pion4, pion5, pion6, pion7])
-        nTerTracks = 4
+#    if cDecayMode == "4pi":
+#        pion4, pion5, pion6, pion7 = D_meson.propagate_and_decay(cDecayMode)
+#        bjet.setTertiaryVtx(pion4.origin)
+#        pions.extend([pion4, pion5, pion6, pion7])
+#        nTerTracks = 4
 
-    elif cDecayMode == "3pi":
-        pion4, pion5, pion6 = D_meson.propagate_and_decay(cDecayMode)
-        bjet.setTertiaryVtx(pion4.origin)
-        pions.extend([pion4, pion5, pion6])
-        nTerTracks = 3
+#    elif cDecayMode == "3pi":
+#        pion4, pion5, pion6 = D_meson.propagate_and_decay(cDecayMode)
+#        bjet.setTertiaryVtx(pion4.origin)
+#        pions.extend([pion4, pion5, pion6])
+#        nTerTracks = 3
 
-    elif cDecayMode == "2pi":
-        pion4, pion5 = D_meson.propagate_and_decay(cDecayMode)
-        bjet.setTertiaryVtx(pion4.origin)
-        pions.extend([pion4, pion5])
-        nTerTracks = 2
+#    elif cDecayMode == "2pi":
+#        pion4, pion5 = D_meson.propagate_and_decay(cDecayMode)
+#        bjet.setTertiaryVtx(pion4.origin)
+#        pions.extend([pion4, pion5])
+#        nTerTracks = 2
 
-    else:
-        print("error: no decay mode selected")
-        break
+#    else:
+#        print("error: no decay mode selected")
+#        break
 
-    bjet.setNTerTracks(nTerTracks)
+#    bjet.setNTerTracks(nTerTracks)
 
     # A simple check to ensure four-mom conservation
     # Not needed but just there to ensure consistency
-    sumfourMom = [0., 0., 0., 0.]
-    for p in pions:
-        sumfourMom += p.fourMom
+#    sumfourMom = [0., 0., 0., 0.]
+#    for p in pions:
+#        sumfourMom += p.fourMom
 
-    if not (np.allclose(sumfourMom, B_meson.fourMom)):
-        print("ERROR")
-        print(sumfourMom)
-        print(B_meson.fourMom)
-        break
+#    if not (np.allclose(sumfourMom, B_meson.fourMom)):
+#        print("ERROR")
+#        print(sumfourMom)
+#        print(B_meson.fourMom)
+#        break
 
     # create tracks form all visible particles and add to the jet
     # allparticles = primary_particles + pions
     # Reverse the ordering, place primarys at the back
-    allparticles = pions + primary_particles
+#    allparticles = pions + primary_particles
 
     # Add the track kinematics, e.g. phi, theta, pT, as a "dummy" first track to pass to the RNN
 
@@ -166,25 +161,25 @@ for i in range(n_jets):
     # jet_kinematics_as_track = [0.,0.,jet_phi,jet_theta,jet_oneOverP, 0., 0., 0.]
     # bjet.addTrack(jet_kinematics_as_track)
 
-    for p in allparticles:
-        tp = track.Track(p, 1, noise=noise)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
-        bjet.addTrack(tp.printParameters())
-        if (1./tp.qOverP) > 100000:
-            print("ERROR: track has momentum over 100GeV!!!")
+#   for p in allparticles:
+#       tp = track.Track(p, 1, noise=noise)  # Come back to the issue of charge later, for now assume ntrl, qOverP->oneOverP
+#        bjet.addTrack(tp.printParameters())
+#        if (1./tp.qOverP) > 100000:
+#            print("ERROR: track has momentum over 100GeV!!!")
         # print("[d0,z0,phi,theta,qOverP,x,y,z]: "+str(tp.printRepresentation()))
 
-    bjets_list[i] = bjet.data()
+#    bjets_list[i] = bjet.data()
 
 
-bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
-                                                  "secVtx_x", "secVtx_y", "secVtx_z",
-                                                  "terVtx_x", "terVtx_y", "terVtx_z",
-                                                  "tracks"])
+#bjets_df = pd.DataFrame(bjets_list, columns=["jet_energy", "jet_flavour", "nSecTracks","nTerTracks",
+#                                                  "secVtx_x", "secVtx_y", "secVtx_z",
+#                                                  "terVtx_x", "terVtx_y", "terVtx_z",
+#                                                  "tracks"])
 
-print("bjets runtime = "+str(time.time()-start))
+#print("bjets runtime = "+str(time.time()-start))
 
-print("bjets runtime = "+str(time.time()-start))
-
+#print("bjets runtime = "+str(time.time()-start))
+'''
 
 # generate c-jets
 
@@ -262,7 +257,7 @@ print("bjets runtime = "+str(time.time()-start))
 
 # save all results using pickle
 
-bjets_df.to_pickle("./bjets_newhighnoise.pkl")
+#bjets_df.to_pickle("./bjets_newhighnoise.pkl")
 # cjets_df.to_pickle("./cjets_newminerrs.pkl")
-# ljets_df.to_pickle("./ljets_newminerrs.pkl")
+ljets_df.to_pickle("./ljets_newminerrs.pkl")
 #
