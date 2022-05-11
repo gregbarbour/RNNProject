@@ -46,7 +46,7 @@ class JetGenerator:
         phi = np.pi / 4
         theta = np.pi / 4
 
-        energy_remainder = 0.8 * jet_energy  # make an assumption that not all jet energy contained in tracks! Reduces n of trks in l-jets
+        energy_remainder = jet_energy  # make an assumption that not all jet energy contained in tracks! Reduces n of trks in l-jets
         primary_particles = []
 
         # I have an idea to prevent the problem of trk distribution being only even
