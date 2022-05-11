@@ -16,7 +16,9 @@ from sklearn.model_selection import train_test_split
 import argparse
 
 
-def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0', 'z0', 'phi', 'theta', 'q/p']):
+def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0', 'z0', 'phi', 'theta', 'q/p'],
+                                            order_by_feature=None, use_custom_order=None, reverse=False,
+                                            no_reorder=False, robust_features=None):
   all_features = np.array(['d0', 'z0', 'phi', 'theta', 'q/p', 'x_o', 'y_o', 'z_o', 'x_p', 'y_p', 'z_p'])
   print("reading the datafile")
   bjets_DF = pd.read_pickle(DF)  # "./bjets_IPonly_abs_10um_errs.pkl")
@@ -25,30 +27,30 @@ def load_data(DF, remove_dirtrack, add_dirtrack, features=['d0', 'z0', 'phi', 't
   print("preprocessing the data")
   if remove_dirtrack: X = remove_direction_track(X, len(features))
   nodirtrack = remove_dirtrack or not add_dirtrack
-  if args.order_by_feature is not None:
-    if args.reverse:
-      print("ordering by decreasing {}".format(args.order_by_feature))
+  if order_by_feature is not None:
+    if reverse:
+      print("ordering by decreasing {}".format(order_by_feature))
     else:
-      print("ordering by increasing {}".format(args.order_by_feature))
-    fidx = np.where(all_features == args.order_by_feature)[0][0]
-    X = order_by_feature(X, nodirtrack, args.reverse, feature=fidx)
-  elif args.use_custom_order is not None:
-    if args.use_custom_order == 'r0':
+      print("ordering by increasing {}".format(order_by_feature))
+    fidx = np.where(all_features == order_by_feature)[0][0]
+    X = order_by_feature(X, nodirtrack, reverse, feature=fidx)
+  elif use_custom_order is not None:
+    if use_custom_order == 'r0':
       print("using custom ordering: by sqrt(d0^2 +z0^2)")
-      X = order_by_r0(X, nodirtrack, args.reverse)
-    elif args.use_custom_order == 't1':
+      X = order_by_r0(X, nodirtrack, reverse)
+    elif use_custom_order == 't1':
       print("using custom ordering: by t1")
-      X = order_by_t1(X, nodirtrack, args.reverse)
+      X = order_by_t1(X, nodirtrack, reverse)
     else:
       raise NotImplemented("custom ordering with {} not implemented".format(args.use_custom_order))
-  elif args.no_reorder:
+  elif no_reorder:
     print("No reorder performed")
   else:
     print("using random order")
     X = order_random(X)
 
   X = only_keep_features(X, features)
-  X = scale_features(X, features, robust_features=args.robust_features)
+  X = scale_features(X, features, robust_features=robust_features)
   X = np.nan_to_num(X)
   y = bjets_DF[['secVtx_x', 'secVtx_y', 'secVtx_z', 'terVtx_x', 'terVtx_y', 'terVtx_z']].values
   y = y * 1000  # change units of vertices from m to mm, keep vals close to unity
@@ -288,9 +290,12 @@ if __name__ == "__main__":
     remove_dirtrack = args.remove_dirtrack
     add_dirtrack = False
 
-  features = args.features
-  X, y = load_data(datafile, remove_dirtrack, add_dirtrack, features=features)
+  X, y = load_data(datafile, remove_dirtrack, add_dirtrack, features=args.features, order_by_feature=args.order_by_feature,
+                                                  use_custom_order=args.use_custom_order, reverse=args.reverse,
+                                                  no_reorder=args.no_reorder, robust_features=args.robust_features)
   X_train, X_test, y_train, y_test = split_train_test(X, y, split=args.split, seed=args.trial)
+  np.save(os.path.join(out_folder, "X_test.npy"), X_test)
+  np.save(os.path.join(out_folder,"y_test.npy"),y_test)
   nHidden = args.nHidden
   nDense = args.nDense
   nJets, nTrks, nFeatures = X_train.shape
